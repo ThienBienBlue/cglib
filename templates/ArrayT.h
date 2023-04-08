@@ -5,7 +5,8 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-struct Array<T> {
+struct Array<T>
+{
 	int capacity;
 	int length;
 	T buffer[0];
@@ -15,13 +16,13 @@ struct Array<T>* Array<T>_init(int capacity)
 {
 	if (capacity < 16)
 		capacity = 16;
-	struct Array<T>* retval = (struct Array<T>*)malloc(sizeof(Array<T>) + capacity * sizeof(T));
+	struct Array<T>* retval = (struct Array<T>*)malloc(sizeof(struct Array<T>) + capacity * sizeof(T));
 	retval->capacity = capacity;
 	retval->length = 0;
 	return retval;
 }
 
-bool Array<T>_push(Array<T>* self, T item)
+bool Array<T>_push(struct Array<T>* self, T item)
 {
 	if (self->capacity <= self->length)
 		return false;
@@ -29,7 +30,7 @@ bool Array<T>_push(Array<T>* self, T item)
 	return true;
 }
 
-bool Array<T>_pop(Array<T>* self)
+bool Array<T>_pop(struct Array<T>* self)
 {
 	if (self->length <= 0)
 		return false;
