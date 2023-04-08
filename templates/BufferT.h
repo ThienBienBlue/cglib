@@ -14,8 +14,8 @@ struct Buffer<T>
 
 struct Buffer<T>* Buffer<T>_init(int capacity)
 {
-	if (capacity < 16)
-		capacity = 16;
+	if (capacity < 0)
+		capacity = 0;
 	struct Buffer<T>* retval = (struct Buffer<T>*)malloc(sizeof(struct Buffer<T>) + capacity * sizeof(T));
 	retval->capacity = capacity;
 	retval->length = 0;

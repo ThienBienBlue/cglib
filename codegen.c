@@ -15,9 +15,12 @@ int main(int argc, char* argv[])
 	if (argc < 4)
 		exit(1);
 
-	// Slurp out template file.
+	// Slurp out template file. Open up header file to write to.
 	char template_buffer[2048];
 	FILE* template_file = fopen(argv[1], "r");
+	FILE* header_file = fopen(argv[3], "w+");
+	if (template_file == NULL || header_file == NULL)
+		exit(1);
 	size_t template_length = fread(template_buffer, sizeof(char), sizeof(template_buffer), template_file);
 
 	// Establish from argv[2] the type names used to replace <T> and _T_.
@@ -62,6 +65,7 @@ int main(int argc, char* argv[])
 	}
 
 	// Process of translating the template contents.
+	// Algorithm simply does string substitution and isn't too smart about multiple generics.
 	char header_buffer[4096];
 	int template_buffer_left = 0;
 	int header_buffer_left = 0;
@@ -92,7 +96,6 @@ int main(int argc, char* argv[])
 	}
 
 	// Write out the translated template file.
-	FILE* header_file = fopen(argv[3], "w+");
 	fwrite(header_buffer, sizeof(char), header_length, header_file);
 	
 	return 0;
