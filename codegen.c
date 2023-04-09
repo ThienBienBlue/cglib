@@ -43,9 +43,9 @@ int main(int argc, char* argv[])
 	FILE* template_file = fopen(cli_args.input_file, "r");
 	FILE* header_file = fopen(cli_args.output_file, "w+");
 	if (template_file == NULL)
-		fprintf(stderr, "Could not open the provided template file for reading.\n");
+		perror("Could not open the provided template file for reading.\n");
 	if (header_file == NULL)
-		fprintf(stderr, "Could not open the provided generated file for writing.\n");
+		perror("Could not open the provided generated file for writing.\n");
 	if (template_file == NULL || header_file == NULL)
 		exit(1);
 
@@ -55,7 +55,7 @@ int main(int argc, char* argv[])
 	// Establish the type names used to replace <T> and _T_.
 	int types_total = cli_args.parametric_bindings_total;
 	char* type_parametrics = cli_args.parametric_variables;
-	char** type_names = cli_args.parametric_bindings;  // Know that there are 26 cstrings.
+	char** type_names = cli_args.parametric_bindings;
 	char type_instances[PARAMETRICS_CAPACITY][TYPE_LENGTH_NULL];
 	// Used to calculate the length of the header file post substituting <T> and _T_.
 	int type_names_length[PARAMETRICS_CAPACITY] = { 0 };
