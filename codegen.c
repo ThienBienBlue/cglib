@@ -10,21 +10,74 @@ bool variable_name_char(char c)
 	return ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z') || '_' == c;
 }
 
+struct CodeGenCliArgs
+{
+	char* input_file;
+	char* output_file;
+	char* parametric_bindings[26];
+	int parametric_bindings_total;
+	char parametric_variables[26];
+};
+
+struct CodeGenCliArgs parse_cli_args(int argc, char* argv[])
+{
+	struct CodeGenCliArgs retval = { 0 };
+	for (int idx = 0; idx < argc; idx++)
+	{
+		char* arg = argv[idx];
+		if (strncmp("-i", arg, 2) == 0)
+			retval.input_file = argv[++idx];
+		else if (strncmp("-o", arg, 2) == 0)
+			retval.output_file = argv[++idx];
+		else
+		{
+			if (arg[0] && arg[1] && arg[2] == 0 && arg[0] == '-' && isupper(arg[1]))
+			{
+				retval.parametric_variables[retval.parametric_bindings_total] = arg[1];
+				retval.parametric_bindings[retval.parametric_bindings_total++] = argv[++idx];
+			}
+		}
+	}
+
+	return retval;
+}
+
 int main(int argc, char* argv[])
 {
-	if (argc < 4)
+	// Validate the arguments.
+	struct CodeGenCliArgs cli_args = parse_cli_args(argc, argv);
+	if (cli_args.input_file == NULL)
+		fprintf(stderr, "Could not find an input file matching `-i ./path/to/input/file.ext'.\n");
+	if (cli_args.output_file == NULL)
+		fprintf(stderr, "Could not find an output file matching `-o ./path/to/output/file.ext'.\n");
+	if (cli_args.parametric_bindings_total == 0)
+		fprintf(stderr, "Could not pair any bindings. E.g. `-T int -R String'.\n");
+	if (cli_args.input_file == NULL || cli_args.output_file == NULL || cli_args.parametric_bindings_total == 0)
 		exit(1);
 
 	// Slurp out template file. Open up header file to write to.
-	char template_buffer[2048];
-	FILE* template_file = fopen(argv[1], "r");
-	FILE* header_file = fopen(argv[3], "w+");
+	FILE* template_file = fopen(cli_args.input_file, "r");
+	FILE* header_file = fopen(cli_args.output_file, "w+");
+	if (template_file == NULL)
+		fprintf(stderr, "Could not open the provided template file for reading.\n");
+	if (header_file == NULL)
+		fprintf(stderr, "Could not open the provided generated file for writing.\n");
 	if (template_file == NULL || header_file == NULL)
 		exit(1);
+
+	char template_buffer[2048];
 	size_t template_length = fread(template_buffer, sizeof(char), sizeof(template_buffer), template_file);
 
-	// Establish from argv[2] the type names used to replace <T> and _T_.
-	char* type_name = argv[2];  // Used in `Array<T>'.
+	// Establish the type names used to replace <T> and _T_.
+	char* type_name = NULL;  // Used in `Array<T>'.
+	for (int idx = 0; idx < cli_args.parametric_bindings_total; idx++)
+	{
+		if (cli_args.parametric_variables[idx] == 'T')
+			type_name = cli_args.parametric_bindings[idx];
+	}
+	if (type_name == NULL)
+		exit(1);
+
 	char type_name_instance[100] = { 0 };  // Used in `T item;'.
 	bool type_is_primitive = islower(type_name[0]);
 	if (!type_is_primitive)
