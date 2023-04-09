@@ -5,41 +5,25 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "CodeGenCliArgs.h"
+
+#define PARAMETRICS_CAPACITY 26
+#define TYPE_LENGTH 100
+#define TYPE_LENGTH_NULL 101
+
 bool variable_name_char(char c)
 {
 	return ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z') || '_' == c;
 }
 
-struct CodeGenCliArgs
+int find_char_in(char* buffer, int buffer_length, char target)
 {
-	char* input_file;
-	char* output_file;
-	char* parametric_bindings[26];
-	int parametric_bindings_total;
-	char parametric_variables[26];
-};
-
-struct CodeGenCliArgs parse_cli_args(int argc, char* argv[])
-{
-	struct CodeGenCliArgs retval = { 0 };
-	for (int idx = 0; idx < argc; idx++)
+	for (int idx = 0; idx < buffer_length; idx++)
 	{
-		char* arg = argv[idx];
-		if (strncmp("-i", arg, 2) == 0)
-			retval.input_file = argv[++idx];
-		else if (strncmp("-o", arg, 2) == 0)
-			retval.output_file = argv[++idx];
-		else
-		{
-			if (arg[0] && arg[1] && arg[2] == 0 && arg[0] == '-' && isupper(arg[1]))
-			{
-				retval.parametric_variables[retval.parametric_bindings_total] = arg[1];
-				retval.parametric_bindings[retval.parametric_bindings_total++] = argv[++idx];
-			}
-		}
+		if (target == buffer[idx])
+			return idx;
 	}
-
-	return retval;
+	return -1;
 }
 
 int main(int argc, char* argv[])
@@ -69,51 +53,60 @@ int main(int argc, char* argv[])
 	size_t template_length = fread(template_buffer, sizeof(char), sizeof(template_buffer), template_file);
 
 	// Establish the type names used to replace <T> and _T_.
-	char* type_name = NULL;  // Used in `Array<T>'.
-	for (int idx = 0; idx < cli_args.parametric_bindings_total; idx++)
-	{
-		if (cli_args.parametric_variables[idx] == 'T')
-			type_name = cli_args.parametric_bindings[idx];
-	}
-	if (type_name == NULL)
-		exit(1);
-
-	char type_name_instance[100] = { 0 };  // Used in `T item;'.
-	bool type_is_primitive = islower(type_name[0]);
-	if (!type_is_primitive)
-	{
-		strcpy(type_name_instance, "struct ");
-		strncpy(type_name_instance + 7, type_name, sizeof(type_name_instance) - 7);
-	}
-	else
-	{
-		strncpy(type_name_instance, type_name, sizeof(type_name_instance));
-		type_name[0] = toupper(type_name[0]);
-	}
-
+	int types_total = cli_args.parametric_bindings_total;
+	char* type_parametrics = cli_args.parametric_variables;
+	char** type_names = cli_args.parametric_bindings;  // Know that there are 26 cstrings.
+	char type_instances[PARAMETRICS_CAPACITY][TYPE_LENGTH_NULL];
 	// Used to calculate the length of the header file post substituting <T> and _T_.
-	int type_name_length = strnlen(type_name, 100);
-	int type_name_instance_length = strnlen(type_name_instance, sizeof(type_name_instance));
-	size_t header_length = template_length;
+	int type_names_length[PARAMETRICS_CAPACITY] = { 0 };
+	int type_instances_length[PARAMETRICS_CAPACITY] = { 0 };
+
+	for (int idx = 0; idx < types_total; idx++)
+	{
+		char* type_name = cli_args.parametric_bindings[idx];
+		char* type_instance = type_instances[idx];
+		bool type_is_primitive = islower(type_name[0]);
+		if (!type_is_primitive)
+		{
+			strcpy(type_instance, "struct ");
+			strncpy(type_instance + 7, type_name, TYPE_LENGTH - 7);
+		}
+		else
+		{
+			strncpy(type_instance, type_name, TYPE_LENGTH);
+			type_name[0] = toupper(type_name[0]);
+		}
+		type_names_length[idx] = strnlen(type_name, TYPE_LENGTH);
+		type_instances_length[idx] = strnlen(type_instance, TYPE_LENGTH);
+	}
 
 	// Walk over the file's contents to match <T> and _T_.
-	int matches[100];
+	size_t header_length = template_length;
+	int matches[64];  // First character we want to write over. So idx of '<' or 'T'.
 	int matches_total = 0;
-	for (int idx = 0, stop = template_length - 2; idx < stop; idx++)
+	for (int idx = 0, stop = template_length - 2; idx < stop && matches_total < 64; idx++)
 	{
 		char c1 = template_buffer[idx];
 		char c2 = template_buffer[idx + 1];
 		char c3 = template_buffer[idx + 2];
 
-		if (c1 == '<' && c2 == 'T' && c3 == '>')
+		if (c1 == '<' && isupper(c2) && c3 == '>')
 		{
-			header_length += type_name_length - 3;
-			matches[matches_total++] = -idx;  // Yes, negative encoding
+			int type_idx = find_char_in(type_parametrics, types_total, c2);
+			if (type_idx != -1)
+			{
+				header_length += type_names_length[type_idx] - 3;
+				matches[matches_total++] = -idx;  // Yes, negative encoding
+			}
 		}
-		else if (!variable_name_char(c1) && c2 == 'T' && !variable_name_char(c3))
+		else if (!variable_name_char(c1) && isupper(c2) && !variable_name_char(c3))
 		{
-			header_length += type_name_instance_length - 1;
-			matches[matches_total++] = idx + 1;  // +1 because we want idx of T in _T_ pattern.
+			int type_idx = find_char_in(type_parametrics, types_total, c2);
+			if (type_idx != -1)
+			{
+				header_length += type_instances_length[type_idx] - 1;
+				matches[matches_total++] = idx + 1;  // +1 because we want idx of T in _T_ pattern.
+			}
 		}
 	}
 
@@ -131,18 +124,24 @@ int main(int argc, char* argv[])
 			template_idx = -template_idx;
 			is_instance = false;
 		}
+		char parametric = template_buffer[template_idx + (is_instance ? 0 : 1)];
+		int type_idx = find_char_in(type_parametrics, types_total, parametric);
+		char* type_name = type_names[type_idx];
+		char* type_instance = type_instances[type_idx];
+		int type_name_length = type_names_length[type_idx];
+		int type_instance_length = type_instances_length[type_idx];
 
 		int copy_amount = template_idx - template_buffer_left;
 		strncpy(header_buffer + header_buffer_left, template_buffer + template_buffer_left, copy_amount);
 		header_buffer_left += copy_amount;
 		template_buffer_left = template_idx + (is_instance ? 1 : 3);
 
-		copy_amount = is_instance ? type_name_instance_length : type_name_length;
-		char* type_to_copy = is_instance ? type_name_instance : type_name;
+		copy_amount = is_instance ? type_instance_length : type_name_length;
+		char* type_to_copy = is_instance ? type_instance : type_name;
 		strncpy(header_buffer + header_buffer_left, type_to_copy, copy_amount);
 		header_buffer_left += copy_amount;
 	}
-	if (template_buffer_left < template_length)
+	if (template_buffer_left < (int)template_length)
 	{
 		strncpy(header_buffer + header_buffer_left, template_buffer + template_buffer_left,
 				template_length - template_buffer_left);
