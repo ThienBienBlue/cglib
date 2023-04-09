@@ -41,9 +41,9 @@ int main(int argc, char* argv[])
 
 	// Slurp out template file. Open up header file to write to.
 	FILE* template_file = fopen(cli_args.input_file, "r");
-	FILE* header_file = fopen(cli_args.output_file, "w+");
 	if (template_file == NULL)
 		perror("Could not open the provided template file for reading.\n");
+	FILE* header_file = fopen(cli_args.output_file, "w+");
 	if (header_file == NULL)
 		perror("Could not open the provided generated file for writing.\n");
 	if (template_file == NULL || header_file == NULL)
@@ -54,17 +54,17 @@ int main(int argc, char* argv[])
 
 	// Establish the type names used to replace <T> and _T_.
 	int types_total = cli_args.parametric_bindings_total;
-	char* type_parametrics = cli_args.parametric_variables;
-	char** type_names = cli_args.parametric_bindings;
-	char type_instances[PARAMETRICS_CAPACITY][TYPE_LENGTH_NULL];
+	char* types_parametric = cli_args.parametric_variables;
+	char** types_name = cli_args.parametric_bindings;
+	char types_instance[PARAMETRICS_CAPACITY][TYPE_LENGTH_NULL];
 	// Used to calculate the length of the header file post substituting <T> and _T_.
-	int type_names_length[PARAMETRICS_CAPACITY] = { 0 };
-	int type_instances_length[PARAMETRICS_CAPACITY] = { 0 };
+	int types_name_length[PARAMETRICS_CAPACITY] = { 0 };
+	int types_instance_length[PARAMETRICS_CAPACITY] = { 0 };
 
 	for (int idx = 0; idx < types_total; idx++)
 	{
 		char* type_name = cli_args.parametric_bindings[idx];
-		char* type_instance = type_instances[idx];
+		char* type_instance = types_instance[idx];
 		bool type_is_primitive = islower(type_name[0]);
 		if (!type_is_primitive)
 		{
@@ -76,15 +76,15 @@ int main(int argc, char* argv[])
 			strncpy(type_instance, type_name, TYPE_LENGTH);
 			type_name[0] = toupper(type_name[0]);
 		}
-		type_names_length[idx] = strnlen(type_name, TYPE_LENGTH);
-		type_instances_length[idx] = strnlen(type_instance, TYPE_LENGTH);
+		types_name_length[idx] = strnlen(type_name, TYPE_LENGTH);
+		types_instance_length[idx] = strnlen(type_instance, TYPE_LENGTH);
 	}
 
 	// Walk over the file's contents to match <T> and _T_.
 	size_t header_length = template_length;
-	int matches[64];  // First character we want to write over. So idx of '<' or 'T'.
-	int matches_total = 0;
-	for (int idx = 0, stop = template_length - 2; idx < stop && matches_total < 64; idx++)
+	int substitutions_idx[64];
+	int substitutions_total = 0;
+	for (int idx = 0, stop = template_length - 2; idx < stop && substitutions_total < 64; idx++)
 	{
 		char c1 = template_buffer[idx];
 		char c2 = template_buffer[idx + 1];
@@ -92,20 +92,20 @@ int main(int argc, char* argv[])
 
 		if (c1 == '<' && isupper(c2) && c3 == '>')
 		{
-			int type_idx = find_char_in(type_parametrics, types_total, c2);
+			int type_idx = find_char_in(types_parametric, types_total, c2);
 			if (type_idx != -1)
 			{
-				header_length += type_names_length[type_idx] - 3;
-				matches[matches_total++] = -idx;  // Yes, negative encoding
+				header_length += types_name_length[type_idx] - 3;
+				substitutions_idx[substitutions_total++] = -idx;  // Yes, negative encoding
 			}
 		}
 		else if (!variable_name_char(c1) && isupper(c2) && !variable_name_char(c3))
 		{
-			int type_idx = find_char_in(type_parametrics, types_total, c2);
+			int type_idx = find_char_in(types_parametric, types_total, c2);
 			if (type_idx != -1)
 			{
-				header_length += type_instances_length[type_idx] - 1;
-				matches[matches_total++] = idx + 1;  // +1 because we want idx of T in _T_ pattern.
+				header_length += types_instance_length[type_idx] - 1;
+				substitutions_idx[substitutions_total++] = idx + 1;  // +1 because we want idx of T in _T_ pattern.
 			}
 		}
 	}
@@ -115,9 +115,9 @@ int main(int argc, char* argv[])
 	char header_buffer[4096];
 	int template_buffer_left = 0;
 	int header_buffer_left = 0;
-	for (int match_idx = 0; match_idx < matches_total; match_idx++)
+	for (int match_idx = 0; match_idx < substitutions_total; match_idx++)
 	{
-		int template_idx = matches[match_idx];
+		int template_idx = substitutions_idx[match_idx];
 		bool is_instance = true;
 		if (template_idx < 0)
 		{
@@ -125,11 +125,11 @@ int main(int argc, char* argv[])
 			is_instance = false;
 		}
 		char parametric = template_buffer[template_idx + (is_instance ? 0 : 1)];
-		int type_idx = find_char_in(type_parametrics, types_total, parametric);
-		char* type_name = type_names[type_idx];
-		char* type_instance = type_instances[type_idx];
-		int type_name_length = type_names_length[type_idx];
-		int type_instance_length = type_instances_length[type_idx];
+		int type_idx = find_char_in(types_parametric, types_total, parametric);
+		char* type_name = types_name[type_idx];
+		char* type_instance = types_instance[type_idx];
+		int type_name_length = types_name_length[type_idx];
+		int type_instance_length = types_instance_length[type_idx];
 
 		int copy_amount = template_idx - template_buffer_left;
 		strncpy(header_buffer + header_buffer_left, template_buffer + template_buffer_left, copy_amount);
