@@ -7,5 +7,5 @@ clean:
 	rm ./types/*
 	rm ./codegen
 
-codegen: codegen.c
-	$(CC) $(CFLAGS) codegen.c -O2 -o codegen
+codegen: codegen.c CodeGenCliArgs.c CodeGenCliArgs.h
+	$(CC) $(CFLAGS) codegen.c CodeGenCliArgs.c -O2 -o codegen
