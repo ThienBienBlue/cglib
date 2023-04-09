@@ -1,7 +1,10 @@
+#ifndef BUFFER_<T>_H_
+#define BUFFER_<T>_H_
+
 /**
  * This file was automatically generated to be a generic Buffer.
+ * Buffers are C "arrays" that also bundles the :capacity and :length.
  */
-
 #include <stdbool.h>
 #include <stdlib.h>
 
@@ -38,3 +41,16 @@ bool Buffer<T>_pop(struct Buffer<T>* self)
 	return true;
 }
 
+bool Buffer<T>_swap(struct Buffer<T>* self, int left_idx, int right_idx)
+{
+	int buffer_length = self->length;
+	if (!(0 <= left_idx && left_idx < buffer_length && 0 <= right_idx && right_idx < buffer_length))
+		return false;
+	T* buffer = self->buffer;
+	T temp = buffer[left_idx];
+	buffer[left_idx] = buffer[right_idx];
+	buffer[right_idx] = temp;
+	return true;
+}
+
+#endif  // BUFFER_<T>_H_
