@@ -17,8 +17,12 @@ struct CodeGenCliArgs parse_cli_args(int argc, char* argv[])
 		{
 			if (arg[0] && arg[1] && arg[2] == 0 && arg[0] == '-' && isupper(arg[1]))
 			{
-				retval.parametric_variables[retval.parametric_bindings_total] = arg[1];
-				retval.parametric_bindings[retval.parametric_bindings_total++] = argv[++idx];
+				char* bound_type = argv[idx + 1];
+				if (bound_type[0] && isalpha(bound_type[0]))
+				{
+					retval.parametric_variables[retval.parametric_bindings_total] = arg[1];
+					retval.parametric_bindings[retval.parametric_bindings_total++] = argv[++idx];
+				}
 			}
 		}
 	}
