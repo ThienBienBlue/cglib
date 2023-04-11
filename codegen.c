@@ -58,8 +58,8 @@ int main(int argc, char* argv[])
 	char** types_name = cli_args.parametric_bindings;
 	char types_instance[PARAMETRICS_CAPACITY][TYPE_LENGTH_NULL];
 	// Used to calculate the length of the header file post substituting <T> and _T_.
-	int types_name_length[PARAMETRICS_CAPACITY] = { 0 };
-	int types_instance_length[PARAMETRICS_CAPACITY] = { 0 };
+	int types_name_length[PARAMETRICS_CAPACITY];
+	int types_instance_length[PARAMETRICS_CAPACITY];
 
 	for (int idx = 0; idx < types_total; idx++)
 	{
@@ -82,64 +82,111 @@ int main(int argc, char* argv[])
 
 	// Walk over the file's contents to match <T> and _T_.
 	size_t header_length = template_length;
-	int substitutions_idx[64];
+	int substitutions_at[64];
 	int substitutions_total = 0;
+	// FSM for the <A, B, C> substitution.
+	enum {NONE, OPEN, PARAMETRIC, SEPERATOR} fsm_state = NONE;
+	int fsm_substitution_total, fsm_substitution_at, fsm_template_length, fsm_header_length;
 	for (int idx = 0, stop = template_length - 2; idx < stop && substitutions_total < 64; idx++)
 	{
+		// Two competing matchers. Both matchers can stage their changes and updates will happen at the end.
+		// This is to prevent one matcher's updates messing with the other matcher's updates.
+		bool match_found = false;
+		int header_length_new;
+		int substitutions_at_new;
 		char c1 = template_buffer[idx];
 		char c2 = template_buffer[idx + 1];
 		char c3 = template_buffer[idx + 2];
 
-		if (c1 == '<' && isupper(c2) && c3 == '>')
+		// _T_ matching.
+		if (!variable_name_char(c1) && isupper(c2) && !variable_name_char(c3))
 		{
 			int type_idx = find_char_in(types_parametric, types_total, c2);
 			if (type_idx != -1)
 			{
-				header_length += types_name_length[type_idx] - 3;
-				substitutions_idx[substitutions_total++] = -idx;  // Yes, negative encoding
+				header_length_new = header_length + types_instance_length[type_idx] - 1;
+				substitutions_at_new = idx + 1;  // +1 because we want idx of T in _T_ pattern.
+				match_found = true;
 			}
 		}
-		else if (!variable_name_char(c1) && isupper(c2) && !variable_name_char(c3))
+
+		// FSM matching.
+		fsm_template_length++;
+		if (' ' == c1 || '\n' == c1 || '\t' == c1) {}
+		else if (c1 == '<')
 		{
-			int type_idx = find_char_in(types_parametric, types_total, c2);
-			if (type_idx != -1)
+			fsm_state = OPEN;
+			fsm_substitution_total = substitutions_total;
+			fsm_substitution_at = idx;
+			fsm_template_length = 1;
+			fsm_header_length = header_length;
+		}
+		else if (OPEN == fsm_state || SEPERATOR == fsm_state)
+		{
+			if (isupper(c1))
 			{
-				header_length += types_instance_length[type_idx] - 1;
-				substitutions_idx[substitutions_total++] = idx + 1;  // +1 because we want idx of T in _T_ pattern.
+				int parametric_idx = find_char_in(types_parametric, types_total, c1);
+				if (0 <= parametric_idx)
+				{
+					fsm_state = PARAMETRIC;
+					fsm_header_length += types_name_length[parametric_idx];
+				}
+				else
+					fsm_state = NONE;
 			}
+			else
+				fsm_state = NONE;
+		}
+		else if (PARAMETRIC == fsm_state)
+		{
+			if ('>' == c1)
+			{
+				fsm_state = NONE;
+				match_found = true;
+				substitutions_total = fsm_substitution_total;
+				header_length_new = fsm_header_length - fsm_template_length;
+				substitutions_at_new = -fsm_substitution_at;
+			}
+			else if (',' == c1)
+				fsm_state = SEPERATOR;
+		}
+
+		if (match_found)
+		{
+			header_length = header_length_new;
+			substitutions_at[substitutions_total++] = substitutions_at_new;
 		}
 	}
 
-	// Process of translating the template contents.
-	// Algorithm simply does string substitution and isn't too smart about multiple generics.
+	// Process of translating the template contents. Algorithm simply does string substitution.
 	char header_buffer[4096];
 	int template_buffer_left = 0;
 	int header_buffer_left = 0;
-	for (int match_idx = 0; match_idx < substitutions_total; match_idx++)
+	for (int substitution_idx = 0; substitution_idx < substitutions_total; substitution_idx++)
 	{
-		int template_idx = substitutions_idx[match_idx];
-		bool is_instance = true;
-		if (template_idx < 0)
-		{
-			template_idx = -template_idx;
-			is_instance = false;
-		}
-		char parametric = template_buffer[template_idx + (is_instance ? 0 : 1)];
-		int type_idx = find_char_in(types_parametric, types_total, parametric);
-		char* type_name = types_name[type_idx];
-		char* type_instance = types_instance[type_idx];
-		int type_name_length = types_name_length[type_idx];
-		int type_instance_length = types_instance_length[type_idx];
-
+		int substitution_kind_and_idx = substitutions_at[substitution_idx];
+		bool is_instance = 0 < substitution_kind_and_idx;
+		int template_idx = (0 < substitution_kind_and_idx) ? substitution_kind_and_idx : -substitution_kind_and_idx;
 		int copy_amount = template_idx - template_buffer_left;
+
+		// Copy blurb between substitution indicies for <T, ...> and _T_.
 		strncpy(header_buffer + header_buffer_left, template_buffer + template_buffer_left, copy_amount);
 		header_buffer_left += copy_amount;
-		template_buffer_left = template_idx + (is_instance ? 1 : 3);
+		template_buffer_left = template_idx;
 
-		copy_amount = is_instance ? type_instance_length : type_name_length;
-		char* type_to_copy = is_instance ? type_instance : type_name;
-		strncpy(header_buffer + header_buffer_left, type_to_copy, copy_amount);
-		header_buffer_left += copy_amount;
+		char parametric;
+		do {  // Type instances will loop once. Otherwise we loop for length of <...>.
+			parametric = template_buffer[template_buffer_left++];
+			if (!isupper(parametric))
+				continue;
+
+			int type_idx = find_char_in(types_parametric, types_total, parametric);
+			char* substitute_with = (is_instance) ? types_instance[type_idx] : types_name[type_idx];
+			int substitute_length = (is_instance) ? types_instance_length[type_idx] : types_name_length[type_idx];
+
+			strncpy(header_buffer + header_buffer_left, substitute_with, substitute_length);
+			header_buffer_left += substitute_length;
+		} while (!is_instance && parametric != '>');
 	}
 	if (template_buffer_left < (int)template_length)
 	{
