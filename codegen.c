@@ -85,7 +85,7 @@ int main(int argc, char* argv[])
 	int substitutions_at[64];
 	int substitutions_total = 0;
 	// FSM for the <A, B, C> substitution.
-	enum {NONE, OPEN, PARAMETRIC, SEPERATOR} fsm_state = NONE;
+	enum {NONE, OPEN, PARAMETRIC} fsm_state = NONE;
 	int fsm_substitution_total, fsm_substitution_at, fsm_template_length, fsm_header_length;
 	for (int idx = 0, stop = template_length - 2; idx < stop && substitutions_total < 64; idx++)
 	{
@@ -112,43 +112,33 @@ int main(int argc, char* argv[])
 
 		// FSM matching.
 		fsm_template_length++;
-		if (' ' == c1 || '\n' == c1 || '\t' == c1) {}
+		if (' ' == c1 || '\n' == c1 || '\t' == c1 || ',' == c1) {}
 		else if (c1 == '<')
 		{
 			fsm_state = OPEN;
 			fsm_substitution_total = substitutions_total;
-			fsm_substitution_at = idx;
+			fsm_substitution_at = -idx;  // Purposely pick negative encoding.
 			fsm_template_length = 1;
 			fsm_header_length = header_length;
 		}
-		else if (OPEN == fsm_state || SEPERATOR == fsm_state)
+		else if (OPEN == fsm_state || PARAMETRIC == fsm_state)
 		{
-			if (isupper(c1))
-			{
-				int parametric_idx = find_char_in(types_parametric, types_total, c1);
-				if (0 <= parametric_idx)
-				{
-					fsm_state = PARAMETRIC;
-					fsm_header_length += types_name_length[parametric_idx];
-				}
-				else
-					fsm_state = NONE;
-			}
-			else
-				fsm_state = NONE;
-		}
-		else if (PARAMETRIC == fsm_state)
-		{
-			if ('>' == c1)
+			int parametric_idx;
+			if (PARAMETRIC == fsm_state && '>' == c1)
 			{
 				fsm_state = NONE;
 				match_found = true;
 				substitutions_total = fsm_substitution_total;
 				header_length_new = fsm_header_length - fsm_template_length;
-				substitutions_at_new = -fsm_substitution_at;
+				substitutions_at_new = fsm_substitution_at;
 			}
-			else if (',' == c1)
-				fsm_state = SEPERATOR;
+			else if (isupper(c1) && 0 <= (parametric_idx = find_char_in(types_parametric, types_total, c1)))
+			{
+				fsm_state = PARAMETRIC;
+				fsm_header_length += types_name_length[parametric_idx];
+			}
+			else
+				fsm_state = NONE;
 		}
 
 		if (match_found)
