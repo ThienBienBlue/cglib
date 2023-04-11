@@ -1,17 +1,21 @@
 #ifndef PAIR_<AB>_H_
 #define PAIR_<AB>_H_
 
-struct Pair<A, B>
+/**
+ * Generated code for a Pair.
+ */
+
+struct Pair<AB>
 {
-	A v1;
-	B v2;
+	A first;
+	B second;
 };
 
-struct Pair<A, B> Pair<AB>_make(A v1, B v2)
+struct Pair<AB> Pair<AB>_make(A v1, B v2)
 {
-	struct Pair<A, B> retval;
-	retval.v1 = v1;
-	retval.v2 = v2;
+	struct Pair<AB> retval;
+	retval.first = v1;
+	retval.second = v2;
 	return retval;
 }
 
