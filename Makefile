@@ -1,11 +1,11 @@
 CC = gcc
 CFLAGS = -Wall -Wextra
 
-all: codegen
+all: codegen_simple
 
 clean:
-	rm ./types/*
-	rm ./codegen
+	rm ./generated/*
+	rm ./codegen_simple
 
-codegen: codegen.c CodeGenCliArgs.c CodeGenCliArgs.h
-	$(CC) $(CFLAGS) codegen.c CodeGenCliArgs.c -O2 -o codegen
+codegen_simple: codegen_simple.c CodeGenCliArgs.c CodeGenCliArgs.h
+	$(CC) $(CFLAGS) codegen_simple.c CodeGenCliArgs.c -O2 -o codegen_simple
