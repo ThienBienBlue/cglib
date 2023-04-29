@@ -1,17 +1,21 @@
 #include <ctype.h>
 #include <string.h>
 
-#include "CodeGenCliArgs.h"
+#include "Code_Gen_CLI_Args.h"
 
-struct CodeGenCliArgs parse_cli_args(int argc, char* argv[])
+int const SHORT_ARG_LENGTH = strlen("-a");
+char const ARG_INPUT_FILE[] = "-i";
+char const ARG_OUTPUT_FILE[] = "-o";
+
+struct Code_Gen_CLI_Args parse_cli_args(int argc, char* argv[])
 {
-	struct CodeGenCliArgs retval = { 0 };
+	struct Code_Gen_CLI_Args retval = { 0 };
 	for (int idx = 0; idx < argc; idx++)
 	{
 		char* arg = argv[idx];
-		if (strncmp("-i", arg, 2) == 0)
+		if (strncmp(ARG_INPUT_FILE, arg, SHORT_ARG_LENGTH) == 0)
 			retval.input_file = argv[++idx];
-		else if (strncmp("-o", arg, 2) == 0)
+		else if (strncmp(ARG_OUTPUT_FILE, arg, SHORT_ARG_LENGTH) == 0)
 			retval.output_file = argv[++idx];
 		else
 		{

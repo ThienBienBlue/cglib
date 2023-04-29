@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "CodeGenCliArgs.h"
+#include "Code_Gen_CLI_Args.h"
 
 #define PARAMETRICS_CAPACITY 26
 #define TYPE_LENGTH 100
@@ -16,7 +16,7 @@ bool variable_name_char(char c)
 	return ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z') || '_' == c;
 }
 
-int find_char_in(char* buffer, int buffer_length, char target)
+int find_char_in(char const* buffer, int buffer_length, char target)
 {
 	for (int idx = 0; idx < buffer_length; idx++)
 	{
@@ -29,32 +29,48 @@ int find_char_in(char* buffer, int buffer_length, char target)
 int main(int argc, char* argv[])
 {
 	// Validate the arguments.
-	struct CodeGenCliArgs cli_args = parse_cli_args(argc, argv);
-	if (cli_args.input_file == NULL)
+	struct Code_Gen_CLI_Args cli_args = parse_cli_args(argc, argv);
+	if (NULL == cli_args.input_file)
 		fprintf(stderr, "Could not find an input file matching `-i ./path/to/input/file.ext'.\n");
-	if (cli_args.output_file == NULL)
+	if (NULL == cli_args.output_file)
 		fprintf(stderr, "Could not find an output file matching `-o ./path/to/output/file.ext'.\n");
-	if (cli_args.parametric_bindings_total == 0)
+	if (0 == cli_args.parametric_bindings_total)
 		fprintf(stderr, "Could not pair any bindings. E.g. `-T int -R String'.\n");
-	if (cli_args.input_file == NULL || cli_args.output_file == NULL || cli_args.parametric_bindings_total == 0)
+	if (NULL == cli_args.input_file || NULL == cli_args.output_file || 0 == cli_args.parametric_bindings_total)
 		exit(1);
 
-	// Slurp out template file. Open up header file to write to.
+	// Slurp out the template file and open up the header file to write to.
 	FILE* template_file = fopen(cli_args.input_file, "r");
-	if (template_file == NULL)
-		perror("Could not open the provided template file for reading.\n");
+	if (NULL == template_file)
+		perror("Could not open the provided template file for reading");
 	FILE* header_file = fopen(cli_args.output_file, "w+");
-	if (header_file == NULL)
-		perror("Could not open the provided generated file for writing.\n");
-	if (template_file == NULL || header_file == NULL)
+	if (NULL == header_file)
+		perror("Could not open the provided generated file for writing");
+	if (NULL == template_file || NULL == header_file)
 		exit(1);
 
-	char template_buffer[2048];
-	size_t template_length = fread(template_buffer, sizeof(char), sizeof(template_buffer), template_file);
+	fseek(template_file, 0, SEEK_END);
+	long template_length = ftell(template_file);
+	if (template_length <= 0)
+		perror("Template file is suggested to contain <= 0 bytes. Reporting");
+	char* template_buffer = (char*)malloc((int)template_length);
+	if (NULL == template_buffer)
+		fprintf(stderr, "Could not allocate enough memory to read in the contents of template file.\n");
+	if (template_length <= 0 || NULL == template_buffer)
+		exit(1);
+
+	rewind(template_file);
+	size_t template_read_amount = fread(template_buffer, sizeof(char), template_length, template_file);
+	if (template_length != (long)template_read_amount)
+	{
+		fprintf(stderr, "Could not read the exact amount of bytes as the template file. Read in %ld/%ld bytes.\n",
+				(long)template_read_amount, template_length);
+		exit(1);
+	}
 
 	// Establish the type names used to replace <T> and _T_.
 	int types_total = cli_args.parametric_bindings_total;
-	char* types_parametric = cli_args.parametric_variables;
+	char const* types_parametric = cli_args.parametric_variables;
 	char** types_name = cli_args.parametric_bindings;
 	char types_instance[PARAMETRICS_CAPACITY][TYPE_LENGTH_NULL];
 	// Used to calculate the length of the header file post substituting <T> and _T_.
@@ -66,6 +82,7 @@ int main(int argc, char* argv[])
 		char* type_name = cli_args.parametric_bindings[idx];
 		char* type_instance = types_instance[idx];
 		bool type_is_primitive = islower(type_name[0]);
+
 		if (!type_is_primitive)
 		{
 			strcpy(type_instance, "struct ");
@@ -76,6 +93,7 @@ int main(int argc, char* argv[])
 			strncpy(type_instance, type_name, TYPE_LENGTH);
 			type_name[0] = toupper(type_name[0]);
 		}
+
 		types_name_length[idx] = strnlen(type_name, TYPE_LENGTH);
 		types_instance_length[idx] = strnlen(type_instance, TYPE_LENGTH);
 	}
@@ -85,11 +103,13 @@ int main(int argc, char* argv[])
 	int substitutions_at[64];
 	int substitutions_total = 0;
 	// FSM for the <A, B, C> substitution.
-	enum {NONE, OPEN, PARAMETRIC} fsm_state = NONE;
+	enum Parametric_FSM {NONE, OPEN, PARAMETRIC} fsm_state = NONE;
 	int fsm_substitution_total, fsm_substitution_at, fsm_template_length, fsm_header_length;
+	fsm_template_length = fsm_header_length = 0;  // To silence warnings. Is always initialized prior to usage.
+
 	for (int idx = 0, stop = template_length - 2; idx < stop && substitutions_total < 64; idx++)
 	{
-		// Two competing matchers. Both matchers can stage their changes and updates will happen at the end.
+		// Two competing matchers. Both matchers can stage their changes and updates will commited at the end.
 		// This is to prevent one matcher's updates messing with the other matcher's updates.
 		bool match_found = false;
 		int header_length_new;
@@ -110,7 +130,7 @@ int main(int argc, char* argv[])
 			}
 		}
 
-		// FSM matching.
+		// Parametric FSM matching.
 		fsm_template_length++;
 		if (' ' == c1 || '\n' == c1 || '\t' == c1 || ',' == c1) {}
 		else if (c1 == '<')
@@ -149,9 +169,15 @@ int main(int argc, char* argv[])
 	}
 
 	// Process of translating the template contents. Algorithm simply does string substitution.
-	char header_buffer[4096];
+	char* header_buffer = (char*)malloc(header_length);
+	if (NULL == header_buffer)
+	{
+		fprintf(stderr, "Unable to allocate %d bytes to write the output file.\n", (int)header_length);
+		exit(1);
+	}
 	int template_buffer_left = 0;
 	int header_buffer_left = 0;
+
 	for (int substitution_idx = 0; substitution_idx < substitutions_total; substitution_idx++)
 	{
 		int substitution_kind_and_idx = substitutions_at[substitution_idx];
@@ -186,6 +212,6 @@ int main(int argc, char* argv[])
 
 	// Write out the translated template file.
 	fwrite(header_buffer, sizeof(char), header_length, header_file);
-	
+
 	return 0;
 }

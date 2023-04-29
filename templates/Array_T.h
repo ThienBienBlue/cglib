@@ -7,29 +7,29 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-struct Array<T>
+struct Array_<T>
 {
 	int capacity;
 	int length;
 	T* array;
 };
 
-struct Array<T>* Array<T>_init(int capacity)
+struct Array_<T>* Array_<T>_init(int capacity)
 {
 	int actual_capacity = 0b1000;
 	while (actual_capacity < capacity)
 		actual_capacity = actual_capacity << 1;
 
 	T* array = (T*)calloc(sizeof(T), actual_capacity);
-	struct Array<T>* retval = (struct Array<T>*)malloc(sizeof(struct Array<T>));
+	struct Array_<T>* retval = (struct Array_<T>*)malloc(sizeof(struct Array_<T>));
 	retval->capacity = actual_capacity;
 	retval->length = 0;
 	retval->array = array;
-	
+
 	return retval;
 }
 
-void Array<T>_free(struct Array<T>* self)
+void Array_<T>_free(struct Array_<T>* self)
 {
 	if (self == NULL)
 		return;
@@ -37,7 +37,7 @@ void Array<T>_free(struct Array<T>* self)
 	free(self);
 }
 
-bool Array<T>_push(struct Array<T>* self, T item)
+bool Array_<T>_push(struct Array_<T>* self, T item)
 {
 	if (self->capacity <= self->length)
 	{
@@ -54,7 +54,21 @@ bool Array<T>_push(struct Array<T>* self, T item)
 	return true;
 }
 
-bool Array<T>_pop(struct Array<T>* self)
+bool Array_<T>_concat(struct Array_<T>* self, struct Array_<T>* with)
+{
+	int original_length = self->length;
+	for (int idx = 0; idx < with->length; idx++)
+	{
+		if (!Array_<T>_push(self, with->array[idx]))
+		{
+			self->length = original_length;
+			return false;
+		}
+	}
+	return true;
+}
+
+bool Array_<T>_pop(struct Array_<T>* self)
 {
 	if (0 < self->length)
 	{
@@ -65,7 +79,7 @@ bool Array<T>_pop(struct Array<T>* self)
 		return false;
 }
 
-bool Array<T>_pop_many(struct Array<T>* self, int how_many)
+bool Array_<T>_pop_many(struct Array_<T>* self, int how_many)
 {
 	if (0 <= self->length - how_many)
 	{

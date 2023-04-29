@@ -2,11 +2,11 @@
 #define HASH_MAP_<KV>_H
 
 /**
- * Generated file for a generic HashMap.
+ * Generated file for a generic Hash_Map.
  */
 #include <stdlib.h>
 
-struct HashMap<KV> {
+struct Hash_Map_<KV> {
 	unsigned int capacity;
 	unsigned int capacity_power_of_two;
 	unsigned int (*hash)(K);
@@ -16,7 +16,7 @@ struct HashMap<KV> {
 	V* values;
 };
 
-struct HashMap<KV>* HashMap<KV>_init(unsigned int capacity, unsigned int (*hash)(K), K zero_key, K tombstone)
+struct Hash_Map_<KV>* Hash_Map_<KV>_init(unsigned int capacity, unsigned int (*hash)(K), K zero_key, K tombstone)
 {
 	unsigned int actual_capacity = 0b1;
 	unsigned int actual_capacity_power_of_two = 1;
@@ -27,13 +27,13 @@ struct HashMap<KV>* HashMap<KV>_init(unsigned int capacity, unsigned int (*hash)
 	}
 
 	K* keys = (K*)calloc(actual_capacity, sizeof(K));
+	V* values = (V*)calloc(actual_capacity, sizeof(V));
+	struct Hash_Map_<KV>* retval = (struct Hash_Map_<KV>*)malloc(sizeof(struct Hash_Map_<KV>));
 	if (keys != NULL)
 	{
 		for (int idx = 0; idx < actual_capacity; idx++)
 			keys[idx] = zero_key;
 	}
-	V* values = (V*)calloc(actual_capacity, sizeof(V));
-	HashMap<KV>* retval = (HashMap<KV>*)malloc(sizeof(HashMap<KV>));
 	if (retval != NULL)
 	{
 		retval->capacity = actual_capacity;

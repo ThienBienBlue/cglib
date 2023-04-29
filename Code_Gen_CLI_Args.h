@@ -1,7 +1,7 @@
 #ifndef CODE_GEN_CLI_ARGS_H_
 #define CODE_GEN_CLI_ARGS_H_
 
-struct CodeGenCliArgs
+struct Code_Gen_CLI_Args
 {
 	char* input_file;
 	char* output_file;
@@ -10,6 +10,10 @@ struct CodeGenCliArgs
 	char parametric_variables[26];
 };
 
-struct CodeGenCliArgs parse_cli_args(int argc, char* argv[]);
+/**
+ * Parses a list of :argc arguments given by :argv into the
+ * :returns Code_Gen_CLI_Args
+ */
+struct Code_Gen_CLI_Args parse_cli_args(int argc, char* argv[]);
 
 #endif  // CODE_GEN_CLI_ARGS_H_
