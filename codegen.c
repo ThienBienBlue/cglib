@@ -4,9 +4,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "./Code_Gen_CLI_Args.h"
+#include "./bootstrap/Code_Gen_CLI_Args.h"
 #include "./generated/Array_Char.h"
 #include "./generated/Buffer_Char.h"
+
+#include "./parsing.h"
 
 struct Parametric_Binding
 {
@@ -34,11 +36,6 @@ void Buffer_Char_sprintf(struct Buffer_Char* self, char* format, ...)
 	if (self->capacity < self->length)
 		self->length = self->capacity;
 	va_end(valist);
-}
-
-bool whitespace(char c)
-{
-	return ' ' == c || '\n' == c || '\t' == c;
 }
 
 struct Parametric_Binding* find_in(struct Parametric_Binding* array, int n, char parametric)
@@ -141,7 +138,7 @@ int main(int argc, char* argv[])
 
 		// Three competing matchers. One for name, instance, and a default matcher that copies over :c1.
 		// First matcher that matches will commit their changes, set :idx, and continue the for-loop.
-		if ('<' == c1 && isupper(c2) && (isupper(c3) || whitespace(c3) || ',' == c3 || '>' == c3))
+		if ('<' == c1 && isupper(c2) && (isupper(c3) || is_whitespace(c3) || ',' == c3 || '>' == c3))
 		{
 			enum {PARAMETRIC, CLOSED, INVALID} state = PARAMETRIC;
 			int closing_idx = template_buffer_idx + 2;
@@ -156,7 +153,7 @@ int main(int argc, char* argv[])
 					break;
 				}
 				else if ((isupper(c) && NULL != find_in(type_bindings, type_bindings_total, c)) || ',' == c
-						|| whitespace(c))
+						|| is_whitespace(c))
 					closing_idx++;
 				else
 				{
@@ -172,13 +169,18 @@ int main(int argc, char* argv[])
 				{
 					char parametric = _buffer[inbetween];
 					struct Parametric_Binding* binding = find_in(type_bindings, type_bindings_total, parametric);
-					struct Array_Char type_name = {
-						.array = binding->type_name->buffer,
-						.length = binding->type_name->length,
-						.capacity = binding->type_name->capacity
-					};
 
-					Array_Char_concat(generated_array, &type_name);
+					if (',' == parametric)
+						Array_Char_push(generated_array, '_');
+					else if (binding != NULL)
+					{
+						struct Array_Char type_name = {
+							.array = binding->type_name->buffer,
+							.length = binding->type_name->length,
+							.capacity = binding->type_name->capacity
+						};
+						Array_Char_concat(generated_array, &type_name);
+					}
 				}
 
 				template_buffer_idx = closing_idx;
@@ -188,7 +190,7 @@ int main(int argc, char* argv[])
 
 		// Second matcher for _T_ the type instance.
 		struct Parametric_Binding* _binding;
-		if ('_' != c1 && !isalnum(c1) && '_' != c3 && !isalnum(c3) && isupper(c2)
+		if (!is_variable_name(c1) && !is_variable_name(c3) && isupper(c2)
 				&& NULL != (_binding = find_in(type_bindings, type_bindings_total, c2)))
 		{
 			struct Array_Char type_instance = {

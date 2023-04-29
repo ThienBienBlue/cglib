@@ -68,17 +68,6 @@ bool Array_<T>_concat(struct Array_<T>* self, struct Array_<T>* with)
 	return true;
 }
 
-bool Array_<T>_pop(struct Array_<T>* self)
-{
-	if (0 < self->length)
-	{
-		self->length--;
-		return true;
-	}
-	else
-		return false;
-}
-
 bool Array_<T>_pop_many(struct Array_<T>* self, int how_many)
 {
 	if (0 <= self->length - how_many)
@@ -88,6 +77,11 @@ bool Array_<T>_pop_many(struct Array_<T>* self, int how_many)
 	}
 	else
 		return false;
+}
+
+bool Array_<T>_pop(struct Array_<T>* self)
+{
+	return Array_<T>_pop_many(self, 1);
 }
 
 #endif  // ARRAY_<T>_H_
