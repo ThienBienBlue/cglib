@@ -8,8 +8,7 @@
 
 struct Hash_Map_<K,V>
 {
-	unsigned int capacity;
-	unsigned int capacity_power_of_two;
+	unsigned int capacity_log2;
 	unsigned int (*hash)(K);
 	K zero_key;
 	K tombstone;
@@ -19,12 +18,12 @@ struct Hash_Map_<K,V>
 
 struct Hash_Map_<K,V>* Hash_Map_<K,V>_init(unsigned int capacity, unsigned int (*hash)(K), K zero_key, K tombstone)
 {
-	unsigned int actual_capacity = 0b1;
-	unsigned int actual_capacity_power_of_two = 1;
+	unsigned int actual_capacity = 0b1_0000;
+	unsigned int actual_capacity_log2 = 4;
 	while (actual_capacity < capacity)
 	{
 		actual_capacity = actual_capacity << 1;
-		actual_capacity_power_of_two++;
+		actual_capacity_log2++;
 	}
 
 	K* keys = (K*)calloc(actual_capacity, sizeof(K));
@@ -37,8 +36,7 @@ struct Hash_Map_<K,V>* Hash_Map_<K,V>_init(unsigned int capacity, unsigned int (
 	}
 	if (retval != NULL)
 	{
-		retval->capacity = actual_capacity;
-		retval->capacity_power_of_two = actual_capacity_power_of_two;
+		retval->capacity_log2 = actual_capacity_log2;
 		retval->hash = hash;
 		retval->zero_key = zero_key;
 		retval->tombstone = tombstone;
