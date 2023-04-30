@@ -3,12 +3,19 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
-#include "./bootstrap/Code_Gen_CLI_Args.h"
 #include "./generated/Array_Char.h"
 #include "./generated/Buffer_Char.h"
 
+#include "./codegen.h"
 #include "./parsing.h"
+
+int const SHORT_ARG_LENGTH = strlen("-T");
+char const ARG_INPUT_FILE[] = "-i";
+char const ARG_OUTPUT_FILE[] = "-o";
+int const INCLUDE_ARG_LENGTH = strlen("-include");
+char const INCLUDE_ARG[] = "-include";
 
 struct Parametric_Binding
 {
@@ -16,27 +23,6 @@ struct Parametric_Binding
 	struct Buffer_Char* type_name;
 	struct Buffer_Char* type_instance;
 };
-
-/// fread function for a Buffer_Char. Since fread returns the amount it *would have* returned, the buffer's length is
-/// its capacity if fread could write beyond that.
-void Buffer_Char_fread(struct Buffer_Char* self, FILE* file)
-{
-	self->length = fread(self->buffer, sizeof(char), self->capacity, file);
-	if (self->capacity < self->length)
-		self->length = self->capacity;
-}
-
-/// sprintf function for a Buffer_Char. Since snprintf returns the amount it *would have* returned, the buffer's length
-/// is its capacity if snprintf could write beyond that.
-void Buffer_Char_sprintf(struct Buffer_Char* self, char* format, ...)
-{
-	va_list valist;
-	va_start(valist, format);
-	self->length = vsnprintf(self->buffer, self->capacity, format, valist);
-	if (self->capacity < self->length)
-		self->length = self->capacity;
-	va_end(valist);
-}
 
 struct Parametric_Binding* find_in(struct Parametric_Binding* array, int n, char parametric)
 {
@@ -49,23 +35,20 @@ struct Parametric_Binding* find_in(struct Parametric_Binding* array, int n, char
 	return NULL;
 }
 
-int main(int argc, char* argv[])
+int codegen(struct Codegen_Args args, char* includes[], int includes_length)
 {
-	struct Code_Gen_CLI_Args args = parse_cli_args(argc, argv);
-	{
-		bool missing_input_file = NULL == args.input_file;
-		bool missing_output_file = NULL == args.output_file;
-		bool empty_parametric_bindings = 0 == args.parametric_bindings_total;
+	bool missing_input_file = NULL == args.input_file;
+	bool missing_output_file = NULL == args.output_file;
+	bool empty_parametric_bindings = 0 == args.parametric_bindings_total;
 
-		if (missing_input_file)
-			fprintf(stderr, "Missing template file. Usage `-i ./path/to/template.h'.\n");
-		if (missing_output_file)
-			fprintf(stderr, "Missing generated file target. Usage `-o ./path/to/generated/h'.\n");
-		if (empty_parametric_bindings)
-			fprintf(stderr, "Could not find any parametric bindings. Usage `-A int -B String -C char'.\n");
-		if (missing_input_file || missing_output_file || empty_parametric_bindings)
-			exit(1);
-	}
+	if (missing_input_file)
+		fprintf(stderr, "Missing template file. Usage `-i ./path/to/template.h'.\n");
+	if (missing_output_file)
+		fprintf(stderr, "Missing generated file target. Usage `-o ./path/to/generated/h'.\n");
+	if (empty_parametric_bindings)
+		fprintf(stderr, "Could not find any parametric bindings. Usage `-A int -B String -C char'.\n");
+	if (missing_input_file || missing_output_file || empty_parametric_bindings)
+		return 1;
 
 	FILE* template_file = fopen(args.input_file, "r");
 	if (NULL == template_file)
@@ -74,17 +57,17 @@ int main(int argc, char* argv[])
 	if (NULL == generated_file)
 		perror("Unable to open generated file for writing");
 	if (NULL == template_file || NULL == generated_file)
-		exit(1);
+		return 1;
 
 	// Since we have the file on hand, get the file length and pre-allocate to fit it in memory.
 	fseek(template_file, 0L, SEEK_END);
 	int template_length = ftell(template_file);
-	int template_file_error_code;
-	if (template_length < 0 || (template_file_error_code = ferror(template_file)))
+	int template_file_error_code = ferror(template_file);
+	if (template_length < 0 || template_file_error_code)
 	{
 		fprintf(stderr, "Unable to gaige the length of the template file. Exiting with %d.\n",
 				template_file_error_code);
-		exit(template_file_error_code);
+		return template_file_error_code;
 	}
 	rewind(template_file);
 
@@ -92,7 +75,7 @@ int main(int argc, char* argv[])
 	if (NULL == template_buffer)
 	{
 		fprintf(stderr, "Unable to allocate enough memory to read the full template file.\n");
-		exit(1);
+		return 1;
 	}
 	Buffer_Char_fread(template_buffer, template_file);
 
@@ -125,9 +108,10 @@ int main(int argc, char* argv[])
 	if (NULL == generated_array)
 	{
 		fprintf(stderr, "Unable to allocate enough memory to translate the template file into a generated file.\n");
-		exit(1);
+		return 1;
 	}
 
+	// TODO: Add in additional #include "..." after initial preprocessor macros and comments.
 	char* _buffer = template_buffer->buffer;
 	int template_buffer_idx = 0;
 	for (int stop = template_length - 2; template_buffer_idx < stop; template_buffer_idx++)
@@ -215,4 +199,57 @@ int main(int argc, char* argv[])
 	fwrite(generated_array->array, sizeof(char), generated_array->length, generated_file);
 
 	return 0;
+}
+
+int main(int argc, char* argv[])
+{
+	struct Codegen_Args args = { 0 };
+	char** includes = NULL;
+	int includes_length = 0;
+
+	for (int idx = 0; idx < argc; idx++)
+	{
+		char* arg = argv[idx];
+		if (strncmp(ARG_INPUT_FILE, arg, SHORT_ARG_LENGTH) == 0)
+			args.input_file = argv[++idx];
+		else if (strncmp(ARG_OUTPUT_FILE, arg, SHORT_ARG_LENGTH) == 0)
+			args.output_file = argv[++idx];
+		else if (strncmp(INCLUDE_ARG, arg, INCLUDE_ARG_LENGTH) == 0)
+		{
+			int includes_idx = idx + 1;
+			includes = argv + includes_idx;
+			includes_length = 0;
+			while (includes_idx < argc && argv[includes_idx][0] && '-' != argv[includes_idx][1])
+			{
+				includes_length++;
+				includes_idx++;
+			}
+		}
+		else
+		{
+			if (!(arg[0] && arg[1] && arg[2] == 0 && arg[0] == '-' && isupper(arg[1])))
+				continue;
+
+			char bound_parametric = arg[1];
+			char* bound_type = argv[idx + 1];
+			int binding_idx = bound_parametric - 'A';
+
+			if (args.parametric_bindings[binding_idx] == 0)
+				args.parametric_bindings_total++;  // Allow rebinds prefering the latest one.
+			args.parametric_variables[binding_idx] = bound_parametric;
+			args.parametric_bindings[binding_idx] = bound_type;
+		}
+	}
+
+	for (int compressed_idx = 0, search_idx = 0;
+			compressed_idx < args.parametric_bindings_total;
+			compressed_idx++, search_idx++)
+	{
+		while (args.parametric_variables[search_idx] == 0)
+			search_idx++;
+		args.parametric_variables[compressed_idx] = args.parametric_variables[search_idx];
+		args.parametric_bindings[compressed_idx] = args.parametric_bindings[search_idx];
+	}
+
+	return codegen(args, includes, includes_length);
 }
