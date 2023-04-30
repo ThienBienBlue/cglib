@@ -6,7 +6,8 @@
  */
 #include <stdlib.h>
 
-struct Hash_Map_<K,V> {
+struct Hash_Map_<K,V>
+{
 	unsigned int capacity;
 	unsigned int capacity_power_of_two;
 	unsigned int (*hash)(K);

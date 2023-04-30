@@ -83,6 +83,7 @@ int codegen(struct Codegen_Args args, char* includes[], int includes_length)
 	// Convert the `-S int' from the CLI Args into a name `Int' and instance `int'.
 	struct Parametric_Binding type_bindings[26];
 	int type_bindings_total = args.parametric_bindings_total;
+
 	for (int idx = 0; idx < type_bindings_total; idx++)
 	{
 		struct Buffer_Char* type_name = Buffer_Char_init(100);
@@ -111,68 +112,55 @@ int codegen(struct Codegen_Args args, char* includes[], int includes_length)
 		return 1;
 	}
 
-	// First insert in any #include "..." after initial preprocessor macros and comments.
+	// Now copy over the template file and do parametric conversions. The following for-loop has two state variables:
+	// :template_buffer_idx and :include_state. Both of these must be correctly set by end of iteration.
 	char* _buffer = template_buffer->buffer;
 	int template_buffer_idx = 0;
-
-	while (true)
-	{
-		int eol_idx = template_buffer_idx;
-		enum {WHITESPACE, CODE} first_char_of_line = WHITESPACE;
-
-		while (eol_idx < template_length)
-		{
-			char c = _buffer[eol_idx++];
-			if ('\n' == c)
-				break;
-		}
-
-		for (int idx = template_buffer_idx; idx < eol_idx; idx++)
-		{
-			char c = _buffer[idx];
-			if ('\n' == c || '#' == c || '*' == c || '/' == c)
-				break;
-			else if (is_whitespace(c)) {}
-			else
-			{
-				first_char_of_line = CODE;
-				break;
-			}
-		}
-
-		if (CODE == first_char_of_line)
-			break;
-		else
-		{
-			for (int idx = template_buffer_idx; idx < eol_idx; idx++)
-				Array_Char_push(generated_array, _buffer[idx]);
-
-			template_buffer_idx = eol_idx;
-		}
-	}
-
+	enum {DONE, PRIMED, LATENT} include_state = DONE;
 	if (0 < includes_length)
-	{
-		for (int idx = 0; idx < includes_length; idx++)
-		{
-			char* include_path = includes[idx];
-			int include_path_length = strlen(include_path);  // TBD: Make this safer.
+		include_state = PRIMED;
 
-			Array_Char_concat_cstring(generated_array, "#include \"", 10);
-			Array_Char_concat_cstring(generated_array, include_path, include_path_length);
-			Array_Char_concat_cstring(generated_array, "\"\n", 2);
-		}
-		Array_Char_push(generated_array, '\n');
-	}
-
-	// Now copy over the template file and do parametric conversions.
 	for (int stop = template_length - 2; template_buffer_idx < stop; template_buffer_idx++)
 	{
 		char c1 = _buffer[template_buffer_idx];
 		char c2 = _buffer[template_buffer_idx + 1];
 		char c3 = _buffer[template_buffer_idx + 2];
 
-		// Three competing matchers. One for name, instance, and a default matcher that copies over :c1.
+		// We also need to find a good spot to insert all the #include "...". This will be the first line with code.
+		// Code is `struct ...' or `void foo()'; text of that nature. It does not mean comments, macros, and whitespace.
+		if (PRIMED == include_state)
+		{
+			char first_non_whitespace = 0;
+			for (int idx = template_buffer_idx; idx < template_length; idx++)
+			{
+				first_non_whitespace = _buffer[idx];
+				if ('\n' == first_non_whitespace || !is_whitespace(first_non_whitespace))
+					break;
+			}
+
+			bool insert_includes = '\n' != first_non_whitespace && '#' != first_non_whitespace
+					&& '*' != first_non_whitespace && '/' != first_non_whitespace;
+
+			if (insert_includes)
+			{
+				for (int idx = 0; idx < includes_length; idx++)
+				{
+					char* include_path = includes[idx];
+					int include_path_length = strlen(include_path);  // TBD: Make this safer.
+
+					Array_Char_concat_cstring(generated_array, "#include \"", 10);
+					Array_Char_concat_cstring(generated_array, include_path, include_path_length);
+					Array_Char_concat_cstring(generated_array, "\"\n", 2);
+				}
+				Array_Char_push(generated_array, '\n');
+
+				include_state = DONE;
+			}
+			else
+				include_state = LATENT;
+		}
+
+		// Three competing matchers. One for type name, type instance, and a default matcher that copies over :c1.
 		// First matcher that matches will commit their changes, set :idx, and continue the for-loop.
 		if ('<' == c1 && isupper(c2) && (isupper(c3) || is_whitespace(c3) || ',' == c3 || '>' == c3))
 		{
@@ -180,22 +168,17 @@ int codegen(struct Codegen_Args args, char* includes[], int includes_length)
 			int closing_idx = template_buffer_idx + 2;
 
 			// First Pass: look forward for the '>' index, and validate the parametrics along the way.
-			while (closing_idx < template_length)
+			while (closing_idx < template_length && PARAMETRIC == state)
 			{
 				char c = _buffer[closing_idx];
+
 				if ('>' == c)
-				{
 					state = CLOSED;
-					break;
-				}
 				else if ((isupper(c) && NULL != find_in(type_bindings, type_bindings_total, c)) || ',' == c
 						|| is_whitespace(c))
 					closing_idx++;
 				else
-				{
 					state = INVALID;
-					break;
-				}
 			}
 
 			if (CLOSED == state)
@@ -228,12 +211,15 @@ int codegen(struct Codegen_Args args, char* includes[], int includes_length)
 			struct Buffer_Char* type_instance = _binding->type_instance;
 			Array_Char_push(generated_array, c1);
 			Array_Char_concat_cstring(generated_array, type_instance->buffer, type_instance->length);
+
 			template_buffer_idx = template_buffer_idx + 1;
 			continue;
 		}
 
 		// Default matcher that does nothing special.
 		Array_Char_push(generated_array, c1);
+		if (DONE != include_state && '\n' == c1)
+			include_state = PRIMED;
 	}
 	// Deal with any remainder since the stop condition is not the full :template_buffer_length
 	while (template_buffer_idx < template_length)
@@ -258,7 +244,7 @@ int main(int argc, char* argv[])
 			int includes_idx = idx + 1;
 			includes = argv + includes_idx;
 			includes_length = 0;
-			while (includes_idx < argc && argv[includes_idx][0] && '-' != argv[includes_idx][1])
+			while (includes_idx < argc && argv[includes_idx][0] && '-' != argv[includes_idx][0])
 			{
 				includes_length++;
 				includes_idx++;
