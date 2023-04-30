@@ -1,0 +1,85 @@
+* C Template Codegen
+
+An attempt to add /templates/ in very loose terms into C. The template files are
+converted into C code during user time with ~codegen~ via string substitution.
+
+Sample usage
+#+BEGIN_SRC bash
+  ./codegen -i templates/Buffer_T.h -o generated/Buffer_Char.h -T char
+  ./codegen -i templates/Hash_Map_KV.h -o generated/Hash_Map_KV.h -K String -V int -include ../String.h
+#+END_SRC
+
+** Arguments
+
+#+BEGIN_SRC bash
+  ./codegen -i TEMPLATE_FILE -o GENERATED_OUTPUT_FILE -T BINDING [-A..Z OTHER_BINDINGS] [-include INCLUDE1 INCLUDE2...]
+#+END_SRC
+
+Bindings only exist for ~A..Z~, thus there are only 26 possible bindings at a
+time. A side effect of restricting a binding to one of 26 capital letters is
+that ~<ABC>~ is not ambiguous.
+
+** Style
+
+This brings up the question of commas. Adding a comma will translate to one
+underscore ~_~.
+
+~Trio<ABC>~ where ~A=int~, ~B=String~, ~C=float~ will generate
+~TrioIntStringFloat~.
+
+~Trio_<A,B,C>~ will generate ~Trio_Int_String_Float~.
+
+For non-primitive bindings, an instance such as ~T val;~ will be generate
+~struct String val;~. There is currently no support for dropping the ~struct~.
+
+** Sample template file
+
+#+BEGIN_SRC C
+  #ifndef LINKED_LIST_<T>_H_
+  #define LINKED_LIST_<T>_H_
+
+  struct Linked_List_<T>
+  {
+      T val;
+      struct Linked_List_<T>* next;
+  };
+
+  struct Linked_List_<T>
+  Linked_List_<T>_push(T val);
+
+  struct Linked_List_<T>
+  Linked_List_<T>_pop(T val);
+
+  struct Linked_List_<T>*
+  Linked_List_<T>_find_val(T val);
+
+  #endif
+#+END_SRC
+
+#+BEGIN_SRC bash
+  ./codegen -i templates/Linked_List_T.h -o generated/Linked_List_String.h -T String -include ../String.h
+#+END_SRC
+
+#+BEGIN_SRC C
+  #ifndef LINKED_LIST_String_H_
+  #define LINKED_LIST_String_H_
+
+  #include "../String.h"
+
+  struct Linked_List_String
+  {
+      struct String val;
+      struct Linked_List_String* next;
+  };
+
+  struct Linked_List_String
+  Linked_List_String_push(struct String val);
+
+  struct Linked_List_String
+  Linked_List_String_pop(struct String val);
+
+  struct Linked_List_String*
+  Linked_List_String_find_val(struct String val);
+
+  #endif
+#+END_SRC

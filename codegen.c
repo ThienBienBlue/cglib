@@ -165,7 +165,7 @@ int codegen(struct Codegen_Args args, char* includes[], int includes_length)
 		if ('<' == c1 && isupper(c2) && (isupper(c3) || is_whitespace(c3) || ',' == c3 || '>' == c3))
 		{
 			enum {PARAMETRIC, CLOSED, INVALID} state = PARAMETRIC;
-			int closing_idx = template_buffer_idx + 2;
+			int closing_idx = template_buffer_idx + 1;
 
 			// First Pass: look forward for the '>' index, and validate the parametrics along the way.
 			while (closing_idx < template_length && PARAMETRIC == state)
