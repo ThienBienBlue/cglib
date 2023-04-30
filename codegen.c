@@ -111,9 +111,61 @@ int codegen(struct Codegen_Args args, char* includes[], int includes_length)
 		return 1;
 	}
 
-	// TODO: Add in additional #include "..." after initial preprocessor macros and comments.
+	// First insert in any #include "..." after initial preprocessor macros and comments.
 	char* _buffer = template_buffer->buffer;
 	int template_buffer_idx = 0;
+
+	while (true)
+	{
+		int eol_idx = template_buffer_idx;
+		enum {WHITESPACE, CODE} first_char_of_line = WHITESPACE;
+
+		while (eol_idx < template_length)
+		{
+			char c = _buffer[eol_idx++];
+			if ('\n' == c)
+				break;
+		}
+
+		for (int idx = template_buffer_idx; idx < eol_idx; idx++)
+		{
+			char c = _buffer[idx];
+			if ('\n' == c || '#' == c || '*' == c || '/' == c)
+				break;
+			else if (is_whitespace(c)) {}
+			else
+			{
+				first_char_of_line = CODE;
+				break;
+			}
+		}
+
+		if (CODE == first_char_of_line)
+			break;
+		else
+		{
+			for (int idx = template_buffer_idx; idx < eol_idx; idx++)
+				Array_Char_push(generated_array, _buffer[idx]);
+
+			template_buffer_idx = eol_idx;
+		}
+	}
+
+	if (0 < includes_length)
+	{
+		for (int idx = 0; idx < includes_length; idx++)
+		{
+			char* include_path = includes[idx];
+			int include_path_length = strlen(include_path);  // TBD: Make this safer.
+
+			Array_Char_concat_cstring(generated_array, "#include \"", 10);
+			Array_Char_concat_cstring(generated_array, include_path, include_path_length);
+			Array_Char_concat_cstring(generated_array, "\"\n", 2);
+		}
+		Array_Char_push(generated_array, '\n');
+	}
+
+	// Now copy over the template file and do parametric conversions.
 	for (int stop = template_length - 2; template_buffer_idx < stop; template_buffer_idx++)
 	{
 		char c1 = _buffer[template_buffer_idx];
@@ -158,12 +210,8 @@ int codegen(struct Codegen_Args args, char* includes[], int includes_length)
 						Array_Char_push(generated_array, '_');
 					else if (binding != NULL)
 					{
-						struct Array_Char type_name = {
-							.array = binding->type_name->buffer,
-							.length = binding->type_name->length,
-							.capacity = binding->type_name->capacity
-						};
-						Array_Char_concat(generated_array, &type_name);
+						struct Buffer_Char* type_name = binding->type_name;
+						Array_Char_concat_cstring(generated_array, type_name->buffer, type_name->length);
 					}
 				}
 
@@ -177,14 +225,9 @@ int codegen(struct Codegen_Args args, char* includes[], int includes_length)
 		if (!is_variable_name(c1) && !is_variable_name(c3) && isupper(c2)
 				&& NULL != (_binding = find_in(type_bindings, type_bindings_total, c2)))
 		{
-			struct Array_Char type_instance = {
-				.array = _binding->type_instance->buffer,
-				.length = _binding->type_instance->length,
-				.capacity = _binding->type_instance->capacity
-			};
-
+			struct Buffer_Char* type_instance = _binding->type_instance;
 			Array_Char_push(generated_array, c1);
-			Array_Char_concat(generated_array, &type_instance);
+			Array_Char_concat_cstring(generated_array, type_instance->buffer, type_instance->length);
 			template_buffer_idx = template_buffer_idx + 1;
 			continue;
 		}
@@ -210,11 +253,7 @@ int main(int argc, char* argv[])
 	for (int idx = 0; idx < argc; idx++)
 	{
 		char* arg = argv[idx];
-		if (strncmp(ARG_INPUT_FILE, arg, SHORT_ARG_LENGTH) == 0)
-			args.input_file = argv[++idx];
-		else if (strncmp(ARG_OUTPUT_FILE, arg, SHORT_ARG_LENGTH) == 0)
-			args.output_file = argv[++idx];
-		else if (strncmp(INCLUDE_ARG, arg, INCLUDE_ARG_LENGTH) == 0)
+		if (strncmp(INCLUDE_ARG, arg, INCLUDE_ARG_LENGTH) == 0)
 		{
 			int includes_idx = idx + 1;
 			includes = argv + includes_idx;
@@ -225,6 +264,10 @@ int main(int argc, char* argv[])
 				includes_idx++;
 			}
 		}
+		else if (strncmp(ARG_INPUT_FILE, arg, SHORT_ARG_LENGTH) == 0)
+			args.input_file = argv[++idx];
+		else if (strncmp(ARG_OUTPUT_FILE, arg, SHORT_ARG_LENGTH) == 0)
+			args.output_file = argv[++idx];
 		else
 		{
 			if (!(arg[0] && arg[1] && arg[2] == 0 && arg[0] == '-' && isupper(arg[1])))

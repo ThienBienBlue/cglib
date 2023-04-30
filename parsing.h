@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 
+#include "./generated/Array_Char.h"
 #include "./generated/Buffer_Char.h"
 
 bool is_whitespace(char c);
@@ -17,5 +18,7 @@ void Buffer_Char_fread(struct Buffer_Char* self, FILE* file);
 /// sprintf function for a Buffer_Char. Since snprintf returns the amount it *would have* returned, the buffer's length
 /// is its capacity if snprintf could write beyond that.
 void Buffer_Char_sprintf(struct Buffer_Char* self, char* format, ...);
+
+void Array_Char_concat_cstring(struct Array_Char* self, char* cstring, int cstring_length);
 
 #endif
