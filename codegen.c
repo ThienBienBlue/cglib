@@ -35,7 +35,7 @@ struct Parametric_Binding* find_in(struct Parametric_Binding* array, int n, char
 	return NULL;
 }
 
-struct Array_Char codegen(struct Codegen_Bindings bindings, struct Array_Char template_string)
+struct Array_Char* codegen(struct Codegen_Bindings bindings, struct Array_Char template_string)
 {
 	// Convert the `-T String' from the CLI Args into a name `String' and instance `struct String'.
 	// Convert the `-S int' from the CLI Args into a name `Int' and instance `int'.
@@ -62,13 +62,12 @@ struct Array_Char codegen(struct Codegen_Bindings bindings, struct Array_Char te
 			Buffer_Char_sprintf(type_instance, "struct %s", type);
 	}
 
-	// Init the return value. Use the template's length as an approximate for the space needed.
+	// Init the return value. Use the template's length as an approximation for the space needed.
 	struct Array_Char* generated = Array_Char_init(template_string.length);
 	if (NULL == generated)
 	{
 		fprintf(stderr, "Unable to allocate enough memory to translate the template file into a generated file.\n");
-		struct Array_Char zero_return = { 0 };
-		return zero_return;
+		return NULL;
 	}
 
 	// Now copy over the template file and do parametric conversions. The following for-loop has two state variables:
@@ -80,7 +79,7 @@ struct Array_Char codegen(struct Codegen_Bindings bindings, struct Array_Char te
 
 	int template_buffer_idx = 0;
 	enum {DONE, PRIMED, LATENT} include_state = DONE;
-	if (0 < includes_length)
+	if (0 < includes_length || NULL == includes)
 		include_state = PRIMED;
 
 	for (int stop = buffer_length - 2; template_buffer_idx < stop; template_buffer_idx++)
@@ -184,11 +183,11 @@ struct Array_Char codegen(struct Codegen_Bindings bindings, struct Array_Char te
 		if (DONE != include_state && '\n' == c1)
 			include_state = PRIMED;
 	}
-	// Deal with any remainder since the stop condition is not the full :template_buffer_length
+	// Deal with any remainder since the stop condition is not the full :template_buffer_length.
 	while (template_buffer_idx < buffer_length)
 		Array_Char_push(generated, buffer[template_buffer_idx++]);
 
-	return *generated;
+	return generated;
 }
 
 int main(int argc, char* argv[])
@@ -266,7 +265,7 @@ int main(int argc, char* argv[])
 	if (NULL == template_file_path || NULL == generated_file_path)
 		return 1;
 
-	// Read the template file into a buffer to pass into `codegen'.
+	// Read the template file into a buffer to pass into codegen.
 	fseek(template_file, 0L, SEEK_END);
 	int template_length = ftell(template_file);
 	int template_file_error_code = ferror(template_file);
@@ -287,14 +286,14 @@ int main(int argc, char* argv[])
 	Buffer_Char_fread(template_buffer, template_file);
 
 	struct Array_Char from_buffer = { .array=template_buffer->buffer, .length=template_buffer->length };
-	struct Array_Char generated = codegen(bindings, from_buffer);
-	if (NULL == generated.array || 0 == generated.length)
+	struct Array_Char* generated = codegen(bindings, from_buffer);
+	if (NULL == generated)
 	{
 		fprintf(stderr, "Unable to generate anything from the template file.\n");
 		return 1;
 	}
 
-	fwrite(generated.array, sizeof(char), generated.length, generated_file);
+	fwrite(generated->array, sizeof(char), generated->length, generated_file);
 
 	return 0;
 }
