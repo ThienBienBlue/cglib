@@ -6,6 +6,7 @@ struct Code_Gen_CLI_Args
 	char* input_file;
 	char* output_file;
 	char* parametric_bindings[26];
+	char* include;
 	int parametric_bindings_total;
 	char parametric_variables[26];
 };

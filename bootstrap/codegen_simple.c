@@ -10,6 +10,13 @@
 #define PARAMETRICS_CAPACITY 26
 #define TYPE_LENGTH 100
 #define TYPE_LENGTH_NULL 101
+#define INCLUDE_LENGTH 13  // strlen("#include ""\n\n");
+
+struct Substitution
+{
+	enum Substitution_Type {NAME, INSTANCE, HEADER} type;
+	int idx;
+};
 
 bool variable_name_char(char c)
 {
@@ -100,10 +107,16 @@ int main(int argc, char* argv[])
 
 	// Walk over the file's contents to match <T> and _T_.
 	size_t header_length = template_length;
-	int substitutions_at[64];
+	struct Substitution substitutions[64];
 	int substitutions_total = 0;
 	// FSM for the <A, B, C> substitution.
 	enum Parametric_FSM {NONE, OPEN, PARAMETRIC} fsm_state = NONE;
+	enum Include_FSG {DONE, PRIMED, LATENT} include_state = DONE;
+	if (cli_args.include != NULL)
+	{
+		include_state = PRIMED;
+		header_length += INCLUDE_LENGTH + strlen(cli_args.include);
+	}
 	int fsm_substitution_total, fsm_substitution_at, fsm_template_length, fsm_header_length;
 	fsm_template_length = fsm_header_length = 0;  // To silence warnings. Is always initialized prior to usage.
 
@@ -113,10 +126,35 @@ int main(int argc, char* argv[])
 		// This is to prevent one matcher's updates messing with the other matcher's updates.
 		bool match_found = false;
 		int header_length_new;
+		enum Substitution_Type substitution_type;
 		int substitutions_at_new;
 		char c1 = template_buffer[idx];
 		char c2 = template_buffer[idx + 1];
 		char c3 = template_buffer[idx + 2];
+
+		if (PRIMED == include_state)
+		{
+			char first_non_whitespace = 0;
+			for (int eol = idx; eol < template_length; eol++)
+			{
+				first_non_whitespace = template_buffer[eol];
+				if ('\n' == first_non_whitespace || (' ' != first_non_whitespace && '\t' != first_non_whitespace))
+					break;
+			}
+
+			bool insert_includes = '\n' != first_non_whitespace && '#' != first_non_whitespace
+					&& '*' != first_non_whitespace && '/' != first_non_whitespace;
+			if (insert_includes)
+			{
+				substitutions[substitutions_total++] = (struct Substitution) {
+					.type = HEADER,
+					.idx = idx
+				};
+				include_state = DONE;
+			}
+			else
+				include_state = LATENT;
+		}
 
 		// _T_ matching.
 		if (!variable_name_char(c1) && isupper(c2) && !variable_name_char(c3))
@@ -126,6 +164,7 @@ int main(int argc, char* argv[])
 			{
 				header_length_new = header_length + types_instance_length[type_idx] - 1;
 				substitutions_at_new = idx + 1;  // +1 because we want idx of T in _T_ pattern.
+				substitution_type = INSTANCE;
 				match_found = true;
 			}
 		}
@@ -137,7 +176,7 @@ int main(int argc, char* argv[])
 		{
 			fsm_state = OPEN;
 			fsm_substitution_total = substitutions_total;
-			fsm_substitution_at = -idx;  // Purposely pick negative encoding.
+			fsm_substitution_at = idx;
 			fsm_template_length = 1;
 			fsm_header_length = header_length;
 		}
@@ -151,6 +190,7 @@ int main(int argc, char* argv[])
 				substitutions_total = fsm_substitution_total;
 				header_length_new = fsm_header_length - fsm_template_length;
 				substitutions_at_new = fsm_substitution_at;
+				substitution_type = NAME;
 			}
 			else if (isupper(c1) && 0 <= (parametric_idx = find_char_in(types_parametric, types_total, c1)))
 			{
@@ -164,8 +204,14 @@ int main(int argc, char* argv[])
 		if (match_found)
 		{
 			header_length = header_length_new;
-			substitutions_at[substitutions_total++] = substitutions_at_new;
+			substitutions[substitutions_total++] = (struct Substitution) {
+				.type = substitution_type,
+				.idx = substitutions_at_new
+			};
 		}
+
+		if (include_state != DONE && c1 == '\n')
+			include_state = PRIMED;
 	}
 
 	// Process of translating the template contents. Algorithm simply does string substitution.
@@ -180,15 +226,25 @@ int main(int argc, char* argv[])
 
 	for (int substitution_idx = 0; substitution_idx < substitutions_total; substitution_idx++)
 	{
-		int substitution_kind_and_idx = substitutions_at[substitution_idx];
-		bool is_instance = 0 < substitution_kind_and_idx;
-		int template_idx = (0 < substitution_kind_and_idx) ? substitution_kind_and_idx : -substitution_kind_and_idx;
-		int copy_amount = template_idx - template_buffer_left;
+		struct Substitution substitution = substitutions[substitution_idx];
+		bool is_instance = substitution.type == INSTANCE;
+		int copy_amount = substitution.idx - template_buffer_left;
 
 		// Copy blurb between substitution indicies for <T, ...> and _T_.
 		strncpy(header_buffer + header_buffer_left, template_buffer + template_buffer_left, copy_amount);
 		header_buffer_left += copy_amount;
-		template_buffer_left = template_idx;
+		template_buffer_left = substitution.idx;
+
+		if (substitution.type == HEADER)
+		{
+			int include_length = strlen(cli_args.include);
+			strcpy(header_buffer + header_buffer_left, "#include \"");
+			strcpy(header_buffer + header_buffer_left + 10, cli_args.include);
+			strcpy(header_buffer + header_buffer_left + 10 + include_length, "\"\n\n");
+
+			header_buffer_left += INCLUDE_LENGTH + include_length;
+			continue;
+		}
 
 		char parametric;
 		do {  // Type instances will loop once. Otherwise we loop for length of <...>.
