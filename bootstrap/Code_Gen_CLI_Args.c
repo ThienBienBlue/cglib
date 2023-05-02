@@ -3,22 +3,22 @@
 
 #include "Code_Gen_CLI_Args.h"
 
-int const SHORT_ARG_LENGTH = strlen("-a");
-int const INCLUDE_ARG_LENGTH = strlen("-include");
+int const ARG_FILE_LENGTH = strlen("-a");
+int const ARG_INCLUDE_LENGTH = strlen("-include");
 char const ARG_INPUT_FILE[] = "-i";
 char const ARG_OUTPUT_FILE[] = "-o";
 
 struct Code_Gen_CLI_Args parse_cli_args(int argc, char* argv[])
 {
-	struct Code_Gen_CLI_Args retval = { 0 };
+	struct Code_Gen_CLI_Args retval = {0};
 	for (int idx = 0; idx < argc; idx++)
 	{
 		char* arg = argv[idx];
-		if (strncmp("-include", arg, INCLUDE_ARG_LENGTH) == 0)
+		if (strncmp("-include", arg, ARG_INCLUDE_LENGTH) == 0)
 			retval.include = argv[++idx];
-		else if (strncmp(ARG_INPUT_FILE, arg, SHORT_ARG_LENGTH) == 0)
+		else if (strncmp(ARG_INPUT_FILE, arg, ARG_FILE_LENGTH) == 0)
 			retval.input_file = argv[++idx];
-		else if (strncmp(ARG_OUTPUT_FILE, arg, SHORT_ARG_LENGTH) == 0)
+		else if (strncmp(ARG_OUTPUT_FILE, arg, ARG_FILE_LENGTH) == 0)
 			retval.output_file = argv[++idx];
 		else
 		{

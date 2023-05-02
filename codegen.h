@@ -12,6 +12,13 @@ struct Codegen_Bindings
 	char from[26];
 };
 
+struct Parametric_Binding
+{
+	char parametric;
+	struct Buffer_Char* type_name;
+	struct Buffer_Char* type_instance;
+};
+
 /// Reads in a template and creates a generated string by applying the :bindings.
 /// :bindings The bindings of -T to Type. Since there are only A to Z, the bindings are expected to be in alphabetical
 ///  order and compressed (no empty bindings in between). Any includes are optional.

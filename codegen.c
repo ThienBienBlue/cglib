@@ -6,31 +6,25 @@
 #include <string.h>
 
 #include "./generated/Array_Char.h"
+#include "./generated/Buffer_Parametric_Binding.h"
 #include "./generated/Buffer_Char.h"
 
 #include "./codegen.h"
 #include "./parsing.h"
 
-int const SHORT_ARG_LENGTH = strlen("-T");
 char const ARG_INPUT_FILE[] = "-i";
 char const ARG_OUTPUT_FILE[] = "-o";
-int const INCLUDE_ARG_LENGTH = strlen("-include");
-char const INCLUDE_ARG[] = "-include";
+int const ARG_FILE_LENGTH = strlen("-T");
+char const ARG_INCLUDE[] = "-include";
+int const ARG_INCLUDE_LENGTH = strlen("-include");
 
-struct Parametric_Binding
+struct Parametric_Binding* find_in(struct Buffer_Parametric_Binding* buffer, char parametric)
 {
-	char parametric;
-	struct Buffer_Char* type_name;
-	struct Buffer_Char* type_instance;
-};
-
-struct Parametric_Binding* find_in(struct Parametric_Binding* array, int n, char parametric)
-{
-	for (int idx = 0; idx < n; idx++)
+	for (int idx = 0; idx < buffer->length; idx++)
 	{
-		char matching_parametric = array[idx].parametric;
+		char matching_parametric = buffer->buffer[idx].parametric;
 		if (parametric == matching_parametric)
-			return array + idx;
+			return buffer->buffer + idx;
 	}
 	return NULL;
 }
@@ -39,17 +33,23 @@ struct Array_Char* codegen(struct Codegen_Bindings bindings, struct Array_Char t
 {
 	// Convert the `-T String' from the CLI Args into a name `String' and instance `struct String'.
 	// Convert the `-S int' from the CLI Args into a name `Int' and instance `int'.
-	struct Parametric_Binding type_bindings[26];
 	int bindings_total = bindings.total;
+	struct Buffer_Parametric_Binding* type_bindings = Buffer_Parametric_Binding_init(bindings_total);
+	if (type_bindings == NULL)
+	{
+		fprintf(stderr, "Unable to allocate space for the 26 possible bindings.\n");
+		return NULL;
+	}
 
 	for (int idx = 0; idx < bindings_total; idx++)
 	{
 		struct Buffer_Char* type_name = Buffer_Char_init(100);
 		struct Buffer_Char* type_instance = Buffer_Char_init(100);
+		struct Parametric_Binding type_binding = {0};
 
-		type_bindings[idx].parametric = bindings.from[idx];
-		type_bindings[idx].type_name = type_name;
-		type_bindings[idx].type_instance = type_instance;
+		type_binding.parametric = bindings.from[idx];
+		type_binding.type_name = type_name;
+		type_binding.type_instance = type_instance;
 
 		char* type = bindings.to[idx];
 		bool primitive = islower(type[0]);
@@ -60,11 +60,13 @@ struct Array_Char* codegen(struct Codegen_Bindings bindings, struct Array_Char t
 			Buffer_Char_sprintf(type_instance, "%s", type);
 		else
 			Buffer_Char_sprintf(type_instance, "struct %s", type);
+
+		Buffer_Parametric_Binding_push(type_bindings, type_binding);
 	}
 
 	// Init the return value. Use the template's length as an approximation for the space needed.
 	struct Array_Char* generated = Array_Char_init(template_string.length);
-	if (NULL == generated)
+	if (generated == NULL)
 	{
 		fprintf(stderr, "Unable to allocate enough memory to translate the template file into a generated file.\n");
 		return NULL;
@@ -79,7 +81,7 @@ struct Array_Char* codegen(struct Codegen_Bindings bindings, struct Array_Char t
 
 	int template_buffer_idx = 0;
 	enum {DONE, PRIMED, LATENT} include_state = DONE;
-	if (0 < includes_length || NULL == includes)
+	if (0 < includes_length || includes == NULL)
 		include_state = PRIMED;
 
 	for (int stop = buffer_length - 2; template_buffer_idx < stop; template_buffer_idx++)
@@ -90,18 +92,18 @@ struct Array_Char* codegen(struct Codegen_Bindings bindings, struct Array_Char t
 
 		// We also need to find a good spot to insert all the #include "...". This will be the first line with code.
 		// Code is `struct ...' or `void foo()'; text of that nature. It does not mean comments, macros, and whitespace.
-		if (PRIMED == include_state)
+		if (include_state == PRIMED)
 		{
 			char first_non_whitespace = 0;
 			for (int idx = template_buffer_idx; idx < buffer_length; idx++)
 			{
 				first_non_whitespace = buffer[idx];
-				if ('\n' == first_non_whitespace || !is_whitespace(first_non_whitespace))
+				if (first_non_whitespace == '\n' || !is_whitespace(first_non_whitespace))
 					break;
 			}
 
-			bool insert_includes = '\n' != first_non_whitespace && '#' != first_non_whitespace
-					&& '*' != first_non_whitespace && '/' != first_non_whitespace;
+			bool insert_includes = first_non_whitespace != '\n' && first_non_whitespace != '#'
+					&& first_non_whitespace != '*' && first_non_whitespace != '/';
 
 			if (insert_includes)
 			{
@@ -124,34 +126,33 @@ struct Array_Char* codegen(struct Codegen_Bindings bindings, struct Array_Char t
 
 		// Three competing matchers. One for type name, type instance, and a default matcher that copies over :c1.
 		// First matcher that matches will commit their changes, set :idx, and continue the for-loop.
-		if ('<' == c1 && isupper(c2) && (isupper(c3) || is_whitespace(c3) || ',' == c3 || '>' == c3))
+		if (c1 == '<' && isupper(c2) && (isupper(c3) || is_whitespace(c3) || c3 == ',' || c3 == '>'))
 		{
 			enum {PARAMETRIC, CLOSED, INVALID} state = PARAMETRIC;
 			int closing_idx = template_buffer_idx + 1;
 
 			// First Pass: look forward for the '>' index, and validate the parametrics along the way.
-			while (closing_idx < buffer_length && PARAMETRIC == state)
+			while (closing_idx < buffer_length && state == PARAMETRIC)
 			{
 				char c = buffer[closing_idx];
 
-				if ('>' == c)
+				if (c == '>')
 					state = CLOSED;
-				else if ((isupper(c) && NULL != find_in(type_bindings, bindings_total, c)) || ',' == c
-						|| is_whitespace(c))
+				else if ((isupper(c) && find_in(type_bindings, c) != NULL) || c == ',' || is_whitespace(c))
 					closing_idx++;
 				else
 					state = INVALID;
 			}
 
-			if (CLOSED == state)
+			if (state == CLOSED)
 			{
 				// Second Pass: Convert the parametrics and write them into the :generated_array.
 				for (int inbetween = template_buffer_idx + 1; inbetween < closing_idx; inbetween++)
 				{
 					char parametric = buffer[inbetween];
-					struct Parametric_Binding* binding = find_in(type_bindings, bindings_total, parametric);
+					struct Parametric_Binding* binding = find_in(type_bindings, parametric);
 
-					if (',' == parametric)
+					if (parametric == ',')
 						Array_Char_push(generated, '_');
 					else if (binding != NULL)
 					{
@@ -168,7 +169,7 @@ struct Array_Char* codegen(struct Codegen_Bindings bindings, struct Array_Char t
 		// Second matcher for _T_ the type instance.
 		struct Parametric_Binding* _binding;
 		if (!is_variable_name(c1) && !is_variable_name(c3) && isupper(c2)
-				&& NULL != (_binding = find_in(type_bindings, bindings_total, c2)))
+				&& (_binding = find_in(type_bindings, c2)) != NULL)
 		{
 			struct Buffer_Char* type_instance = _binding->type_instance;
 			Array_Char_push(generated, c1);
@@ -180,7 +181,7 @@ struct Array_Char* codegen(struct Codegen_Bindings bindings, struct Array_Char t
 
 		// Default matcher that does nothing special.
 		Array_Char_push(generated, c1);
-		if (DONE != include_state && '\n' == c1)
+		if (include_state != DONE && c1 == '\n')
 			include_state = PRIMED;
 	}
 	// Deal with any remainder since the stop condition is not the full :template_buffer_length.
@@ -194,17 +195,17 @@ int main(int argc, char* argv[])
 {
 	char* template_file_path = NULL;
 	char* generated_file_path = NULL;
-	struct Codegen_Bindings bindings = { 0 };
+	struct Codegen_Bindings bindings = {0};
 
 	for (int idx = 0; idx < argc; idx++)
 	{
 		char* arg = argv[idx];
-		if (strncmp(INCLUDE_ARG, arg, INCLUDE_ARG_LENGTH) == 0)
+		if (strncmp(ARG_INCLUDE, arg, ARG_INCLUDE_LENGTH) == 0)
 		{
 			int includes_idx = idx + 1;
 			bindings.includes = argv + includes_idx;
 			bindings.includes_length = 0;
-			while (includes_idx < argc && argv[includes_idx][0] && '-' != argv[includes_idx][0])
+			while (includes_idx < argc && argv[includes_idx][0] && argv[includes_idx][0] != '-')
 			{
 				bindings.includes_length++;
 				includes_idx++;
@@ -212,9 +213,9 @@ int main(int argc, char* argv[])
 
 			idx = includes_idx - 1;
 		}
-		else if (strncmp(ARG_INPUT_FILE, arg, SHORT_ARG_LENGTH) == 0)
+		else if (strncmp(ARG_INPUT_FILE, arg, ARG_FILE_LENGTH) == 0)
 			template_file_path = argv[++idx];
-		else if (strncmp(ARG_OUTPUT_FILE, arg, SHORT_ARG_LENGTH) == 0)
+		else if (strncmp(ARG_OUTPUT_FILE, arg, ARG_FILE_LENGTH) == 0)
 			generated_file_path = argv[++idx];
 		else
 		{
@@ -243,9 +244,9 @@ int main(int argc, char* argv[])
 	}
 
 	// Validate the CLI Args.
-	bool missing_template_file = NULL == template_file_path;
-	bool missing_generated_file = NULL == generated_file_path;
-	bool empty_parametric_bindings = 0 == bindings.total;
+	bool missing_template_file = template_file_path == NULL;
+	bool missing_generated_file = generated_file_path == NULL;
+	bool empty_parametric_bindings = bindings.total == 0;
 
 	if (missing_template_file)
 		fprintf(stderr, "Missing template file. Usage `-i ./path/to/template.h'.\n");
@@ -257,12 +258,12 @@ int main(int argc, char* argv[])
 		return 1;
 
 	FILE* template_file = fopen(template_file_path, "r");
-	if (NULL == template_file_path)
+	if (template_file == NULL)
 		perror("Unable to open template file for reading");
 	FILE* generated_file = fopen(generated_file_path, "w");
-	if (NULL == generated_file_path)
+	if (generated_file == NULL)
 		perror("Unable to open generated file for writing");
-	if (NULL == template_file_path || NULL == generated_file_path)
+	if (template_file == NULL || generated_file == NULL)
 		return 1;
 
 	// Read the template file into a buffer to pass into codegen.
@@ -278,7 +279,7 @@ int main(int argc, char* argv[])
 	rewind(template_file);
 
 	struct Buffer_Char* template_buffer = Buffer_Char_init(template_length);
-	if (NULL == template_buffer)
+	if (template_buffer == NULL)
 	{
 		fprintf(stderr, "Unable to allocate enough memory to read the full template file.\n");
 		return 1;
@@ -287,7 +288,7 @@ int main(int argc, char* argv[])
 
 	struct Array_Char from_buffer = { .array=template_buffer->buffer, .length=template_buffer->length };
 	struct Array_Char* generated = codegen(bindings, from_buffer);
-	if (NULL == generated)
+	if (generated == NULL)
 	{
 		fprintf(stderr, "Unable to generate anything from the template file.\n");
 		return 1;
