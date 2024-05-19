@@ -5,9 +5,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "./generated/Array_Char.h"
-#include "./generated/Buffer_Parametric_Binding.h"
-#include "./generated/Buffer_Char.h"
+#include "./primitives/Array_Char.h"
+#include "./primitives/Buffer_Parametric_Binding.h"
+#include "./primitives/Buffer_Char.h"
 
 #include "./codegen.h"
 #include "./parsing.h"
@@ -56,6 +56,7 @@ struct Array_Char* codegen(struct Codegen_Bindings bindings, struct Array_Char t
 
 		Buffer_Char_sprintf(type_name, "%s", type);
 		type_name->buffer[0] = toupper(type_name->buffer[0]);
+
 		if (primitive)
 			Buffer_Char_sprintf(type_instance, "%s", type);
 		else

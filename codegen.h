@@ -1,8 +1,6 @@
 #ifndef CODEGEN_H_
 #define CODEGEN_H_
 
-#include "./generated/Array_Char.h"
-
 struct Codegen_Bindings
 {
 	char* to[26];
