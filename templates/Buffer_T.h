@@ -16,6 +16,8 @@ struct Buffer_<T>
 
 struct Buffer_<T>* Buffer_<T>_init(int capacity);
 
+struct Buffer_<T>* Buffer_<T>_filter(struct Buffer_<T>* self, bool (*filter)(T));
+
 bool Buffer_<T>_push(struct Buffer_<T>* self, T item);
 
 bool Buffer_<T>_pop(struct Buffer_<T>* self);
