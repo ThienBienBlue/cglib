@@ -4,9 +4,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-#include "./primitives/Array_Char.h"
 #include "./primitives/Buffer_Parametric_Binding.h"
-#include "./codegen.h"
 #include "./primitives/String.h"
 
 bool is_whitespace(char c);

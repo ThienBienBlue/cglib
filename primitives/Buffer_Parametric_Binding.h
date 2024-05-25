@@ -7,7 +7,7 @@
  */
 #include <stdbool.h>
 
-#include "../codegen.h"
+#include "./Parametric_Binding.h"
 
 struct Buffer_Parametric_Binding
 {
@@ -23,5 +23,8 @@ bool Buffer_Parametric_Binding_push(struct Buffer_Parametric_Binding* self, stru
 bool Buffer_Parametric_Binding_pop(struct Buffer_Parametric_Binding* self);
 
 bool Buffer_Parametric_Binding_swap(struct Buffer_Parametric_Binding* self, int left_idx, int right_idx);
+
+struct Parametric_Binding const* Buffer_Parametric_Binding_find(
+		struct Buffer_Parametric_Binding const* bindings, char c);
 
 #endif  // BUFFER_Parametric_Binding_H_

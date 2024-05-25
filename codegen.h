@@ -1,29 +1,22 @@
 #ifndef CODEGEN_H_
 #define CODEGEN_H_
 
+#include "./primitives/Buffer_Parametric_Binding.h"
+#include "./primitives/Buffer_String.h"
 #include "./primitives/String.h"
+#include "./primitives/Parametric_Binding.h"
 
-struct Codegen_Bindings
+struct Codegen_Args
 {
-	char* to[26];
-	char** includes;
-	int total;
-	int includes_length;
-	char from[26];
+	struct Buffer_String const* includes;
+	struct Buffer_Parametric_Binding const* bindings;
 };
 
-struct Parametric_Binding
-{
-	char parametric;
-	struct String type_name;
-	struct String type_instance;
-};
-
-/// Reads in a template and creates a generated string by applying the :bindings.
-/// :bindings The bindings of -T to Type. Since there are only A to Z, the bindings are expected to be in alphabetical
-///  order and compressed (no empty bindings in between). Any includes are optional.
+/// Returns application of :args's bindings to :template.
+/// :args Bindings to apply an and includes to inject.
 /// :template_string The string to generate from by applying the :bindings.
 /// :returns The generated string.
-struct Array_Char* codegen(struct Codegen_Bindings bindings, struct Array_Char const template_string);
+struct String const codegen(struct Codegen_Args const args,
+		struct String const template_string);
 
 #endif

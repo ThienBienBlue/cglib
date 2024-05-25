@@ -3,8 +3,6 @@
 
 #include "./Buffer_Parametric_Binding.h"
 
-#include "../codegen.h"
-
 struct Buffer_Parametric_Binding* Buffer_Parametric_Binding_init(int capacity)
 {
 	if (capacity < 0)
@@ -50,4 +48,20 @@ bool Buffer_Parametric_Binding_swap(struct Buffer_Parametric_Binding* self, int 
 	buffer[right_idx] = temp;
 
 	return true;
+}
+
+struct Parametric_Binding const* Buffer_Parametric_Binding_find(
+		struct Buffer_Parametric_Binding const *binding, char parametric)
+{
+	for (int idx = 0; idx < binding->length; idx++)
+	{
+		char matching_parametric = binding->buffer[idx].parametric;
+
+		if (parametric == matching_parametric)
+		{
+			return binding->buffer + idx;
+		}
+	}
+
+	return NULL;
 }

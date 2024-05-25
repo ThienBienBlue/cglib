@@ -3,6 +3,7 @@
 #include <stdio.h>
 
 #include "./parsing.h"
+#include "./primitives/Buffer_Parametric_Binding.h"
 
 bool is_whitespace(char c)
 {
@@ -19,20 +20,6 @@ bool is_instance_char(char c)
 	return !is_variable_name(c) && c != '<' && c != '>';
 }
 
-struct Parametric_Binding const* find_in(struct Buffer_Parametric_Binding const *buffer, char parametric)
-{
-	for (int idx = 0; idx < buffer->length; idx++)
-	{
-		char matching_parametric = buffer->buffer[idx].parametric;
-
-		if (parametric == matching_parametric)
-		{
-			return buffer->buffer + idx;
-		}
-	}
-
-	return NULL;
-}
 
 struct String match_instance_name(
 		struct Buffer_Parametric_Binding const* bindings,
@@ -47,7 +34,8 @@ struct String match_instance_name(
 
 	if (valid_prev_char && valid_char && valid_next_char)
 	{
-		struct Parametric_Binding const* binding = find_in(bindings, instance);
+		struct Parametric_Binding const* binding =
+				Buffer_Parametric_Binding_find(bindings, instance);
 
 		if (binding != NULL)
 		{
@@ -89,7 +77,8 @@ struct String match_type_name(struct Buffer_Parametric_Binding const* bindings,
 		else if (is_whitespace(c));
 		else if (isupper(c))
 		{
-			struct Parametric_Binding const* binding = find_in(bindings, c);
+			struct Parametric_Binding const* binding =
+					Buffer_Parametric_Binding_find(bindings, c);
 
 			if (binding != NULL)
 			{
