@@ -19,7 +19,6 @@ int main()
 	assert(s1.length == 1);
 
 	struct String s2 = String_push(s1, '*');
-	struct String empty = String_empty();
 
 	assert(s2.length == 0);
 
