@@ -1,6 +1,8 @@
 #ifndef CODEGEN_H_
 #define CODEGEN_H_
 
+#include "./primitives/String.h"
+
 struct Codegen_Bindings
 {
 	char* to[26];
@@ -13,8 +15,8 @@ struct Codegen_Bindings
 struct Parametric_Binding
 {
 	char parametric;
-	struct Buffer_Char* type_name;
-	struct Buffer_Char* type_instance;
+	struct String type_name;
+	struct String type_instance;
 };
 
 /// Reads in a template and creates a generated string by applying the :bindings.

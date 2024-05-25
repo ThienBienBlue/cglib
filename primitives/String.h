@@ -19,6 +19,8 @@ struct String
 	char* str;
 };
 
+struct Arena Arena_init(int capacity);
+
 struct String String_empty();
 
 /// If capacity < 0, String takes up remaining space of arena.

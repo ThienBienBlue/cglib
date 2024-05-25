@@ -1,9 +1,22 @@
 #include <stdbool.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "String.h"
 
 struct String EMPTY_STRING = {0};
+
+struct Arena Arena_init(int capacity)
+{
+	char* buf = (char*)malloc(capacity);
+	struct Arena retval;
+
+	retval.offset = 0;
+	retval.capacity = capacity;
+	retval.bytes = buf;
+
+	return retval;
+}
 
 struct String String_empty()
 {
