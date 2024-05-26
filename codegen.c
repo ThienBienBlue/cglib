@@ -8,8 +8,8 @@
 struct String const codegen(struct Codegen_Args const args,
 		struct String const template_string)
 {
-	int init_amount = (template_string.length < 50)
-			? 100
+	int init_amount = (2 * template_string.length < 1024)
+			? 1024
 			: 2 * template_string.length;
 	struct Arena arena = Arena_init(init_amount);
 	struct Arena binding_zero = Arena_init(100);
@@ -28,7 +28,7 @@ struct String const codegen(struct Codegen_Args const args,
 		include_state = PRIMED;  // Also primed at the very beginning.
 	}
 
-	for (int i = 0; i < str_len; i++)
+	for (int i = 0; i < str_len;)
 	{
 		// Inject `#include`.
 		if (include_state == PRIMED)
@@ -84,21 +84,23 @@ struct String const codegen(struct Codegen_Args const args,
 		// default to appending the current character.
 		char c = str[i];
 		struct Arena binding_arena = binding_zero;
-		struct String append = match_type_name(bindings, &binding_arena,
+		struct String_Offset append = match_type_name(bindings, &binding_arena,
 				template_string, i);
 
-		if (append.length <= 0)
+		if (append.offset <= 0)
 		{
 			append = match_instance_name(bindings, template_string, i);
 		}
 
-		if (0 < append.length)
+		if (0 < append.offset)
 		{
-			retval = String_append(retval, append);
+			retval = String_append(retval, append.string);
+			i += append.offset;
 		}
 		else
 		{
 			retval = String_push(retval, c);
+			i += 1;
 		}
 
 		if (include_state != DONE && c == '\n')

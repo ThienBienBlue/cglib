@@ -20,8 +20,17 @@ bool is_instance_char(char c)
 	return !is_variable_name(c) && c != '<' && c != '>';
 }
 
+struct String_Offset make(struct String string, int offset)
+{
+	struct String_Offset retval;
 
-struct String match_instance_name(
+	retval.string = string;
+	retval.offset = offset;
+
+	return retval;
+}
+
+struct String_Offset match_instance_name(
 		struct Buffer_Parametric_Binding const* bindings,
 		struct String const str, int offset)
 {
@@ -39,27 +48,32 @@ struct String match_instance_name(
 
 		if (binding != NULL)
 		{
-			return binding->type_instance;
+			return make(binding->type_instance, 1);
 		}
 		else
 		{
-			return String_empty();
+			return make(String_empty(), 0);
 		}
 	}
 	else
 	{
-		return String_empty();
+		return make(String_empty(), 0);
 	}
 }
 
-struct String match_type_name(struct Buffer_Parametric_Binding const* bindings,
+struct String_Offset match_type_name(struct Buffer_Parametric_Binding const* bindings,
 		struct Arena* arena, struct String const str, int offset)
 {
 	char* s = str.str;
+	int consumed = 0;
 
 	if (s[offset] != '<')
 	{
-		return String_empty();
+		return make(String_empty(), 0);
+	}
+	else
+	{
+		consumed++;
 	}
 
 	bool closed = false;
@@ -68,6 +82,7 @@ struct String match_type_name(struct Buffer_Parametric_Binding const* bindings,
 	for (int idx = offset + 1; idx < str.length; idx++)
 	{
 		char c = s[idx];
+		consumed++;
 
 		if (c == '>')
 		{
@@ -101,10 +116,10 @@ struct String match_type_name(struct Buffer_Parametric_Binding const* bindings,
 
 	if (closed)
 	{
-		return retval;
+		return make(retval, consumed);
 	}
 	else
 	{
-		return String_empty();
+		return make(String_empty(), 0);
 	}
 }
