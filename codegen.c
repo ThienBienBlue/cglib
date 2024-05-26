@@ -5,7 +5,7 @@
 
 #include "./primitives/String.h"
 
-struct String const codegen(struct Codegen_Args const args,
+struct String codegen(struct Codegen_Args const args,
 		struct String const template_string)
 {
 	int init_amount = (2 * template_string.length < 1024)

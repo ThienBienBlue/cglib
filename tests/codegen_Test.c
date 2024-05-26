@@ -11,7 +11,7 @@ struct Parametric_Binding binding(char c, char* t, char* i)
 void assert_codegen(struct Codegen_Args args, char* template, char* output)
 {
 	struct String _template = String_from_cstring(template);
-	struct String generated = codegen(args, _template);
+	struct String const generated = codegen(args, _template);
 
 	assert((int)strlen(output) == generated.length);
 	assert(strncmp(generated.str, output, generated.length) == 0);

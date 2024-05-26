@@ -16,7 +16,7 @@ struct Codegen_Args
 /// :args Bindings to apply an and includes to inject.
 /// :template_string The string to generate from by applying the :bindings.
 /// :returns The generated string.
-struct String const codegen(struct Codegen_Args const args,
+struct String codegen(struct Codegen_Args const args,
 		struct String const template_string);
 
 #endif
