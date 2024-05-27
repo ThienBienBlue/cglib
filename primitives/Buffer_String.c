@@ -3,7 +3,6 @@
 
 #include "./Buffer_String.h"
 
-
 struct Buffer_String* Buffer_String_init(int capacity)
 {
 	if (capacity < 0)
