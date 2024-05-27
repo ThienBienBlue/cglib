@@ -34,7 +34,7 @@ struct String wrap(char const* const str)
 
 int main(int argc, char* argv[])
 {
-	char* arg_bindings[26] = {0};
+	struct String arg_bindings[26] = {0};
 	int num_bindings = 0;
 	int struct_instance = 0;  // Malloc enough space for instance names.
 	char* input = NULL;
@@ -78,14 +78,14 @@ int main(int argc, char* argv[])
 			char binds = arg[1];
 			int idx = binds - 'A';
 
-			if (arg_bindings[idx] == NULL)
+			if (arg_bindings[idx].length == 0)
 			{
 				num_bindings++;
 			}
 
-			arg_bindings[idx] = argv[++i];
+			arg_bindings[idx] = wrap(argv[++i]);
 			struct_instance += STRUCT_LEN;
-			struct_instance += strlen(argv[i]);
+			struct_instance += arg_bindings[idx].length;
 		}
 	}
 
@@ -105,27 +105,28 @@ int main(int argc, char* argv[])
 
 	for (int i = 0; i < 26; i++)
 	{
-		char* binding = arg_bindings[i];
+		struct String binding = arg_bindings[i];
 
-		if (binding != NULL)
+		if (0 < binding.length)
 		{
-			bool primitive = islower(binding[0]);
-			struct String type_name = String_from_cstring(binding);
+			bool primitive = islower(binding.str[0]);
+			struct String type_name;
 			struct String instance_name;
 
 			if (primitive)
 			{
-				instance_name = type_name;
-				type_name = String_init(&name_arena, instance_name.length);
-				type_name = String_append(type_name, instance_name);
+				instance_name = binding;
+				type_name = String_init(&name_arena, binding.length);
+				type_name = String_append(type_name, binding);
 				type_name.str[0] += 'A' - 'a';
 			}
 			else
 			{
+				type_name = binding;
 				instance_name = String_init(&name_arena,
-				STRUCT_LEN + type_name.length);
+						STRUCT_LEN + binding.length);
 				instance_name = String_append(instance_name, struct_str);
-				instance_name = String_append(instance_name, type_name);
+				instance_name = String_append(instance_name, binding);
 			}
 
 			struct Parametric_Binding _binding;
