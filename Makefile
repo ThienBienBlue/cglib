@@ -29,5 +29,5 @@ tests/out/parsing_Test: tests/out tests/parsing_Test.c parsing.h parsing.c primi
 tests/out/codegen_Test: tests/out tests/codegen_Test.c parsing.h parsing.c codegen.h codegen.c primitives/Buffer_Parametric_Binding.h primitives/Buffer_Parametric_Binding.c primitives/Buffer_String.c primitives/Buffer_String.c primitives/Parametric_Binding.h primitives/Parametric_Binding.c primitives/String.h primitives/String.c
 	$(CC) $(CFLAGS) $(DEBUG) $$(echo $^ | tr ' ' '\n' | grep '.c$$') -o $@
 
-codegen: codegen.h codegen.c parsing.h parsing.c ./primitives/Buffer_Char.h ./primitives/Buffer_Char.c ./primitives/Array_Char.h ./primitives/Array_Char.c ./primitives/Buffer_Parametric_Binding.h ./primitives/Buffer_Parametric_Binding.c
-	$(CC) $(CFLAGS) codegen.c parsing.c ./primitives/Buffer_Char.c ./primitives/Array_Char.c ./primitives/Buffer_Parametric_Binding.c -O2 -o codegen
+codegen: main.c codegen.h codegen.c parsing.h parsing.c primitives/Buffer_Parametric_Binding.h primitives/Buffer_Parametric_Binding.c primitives/Buffer_String.h primitives/Buffer_String.c primitives/Parametric_Binding.h primitives/Parametric_Binding.c primitives/String.h primitives/String.c
+	$(CC) $(CFLAGS) $(DEBUG) $$(echo $^ | tr ' ' '\n' | grep '.c$$') -o $@
