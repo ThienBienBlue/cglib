@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 
+#include "./codegen.h"
 #include "./primitives/Buffer_Parametric_Binding.h"
 #include "./primitives/String.h"
 
@@ -29,7 +30,7 @@ struct String_Offset match_instance_name(
 /// :returns a String with the name of the corresponding match and number of
 ///  chars consumed by match. Empty String otherwise.
 struct String_Offset match_type_name(
-		struct Buffer_Parametric_Binding const* bindings,
+		struct Buffer_Parametric_Binding const* bindings, enum Code_Style style,
 		struct Arena* arena, struct String const str, int offset);
 
 #endif

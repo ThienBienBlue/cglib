@@ -21,12 +21,12 @@ struct Parametric_Binding binding(char c, char* type_name, char* instance_name)
 }
 
 void assert_type_name(struct Buffer_Parametric_Binding const* bindings,
-		char* template, char* output)
+		enum Code_Style style, char* template, char* output)
 {
 	struct Arena arena = zero;
 	struct String _template = String_from_cstring(template);
 	struct String parsed =
-			match_type_name(bindings, &arena, _template, 0).string;
+			match_type_name(bindings, style, &arena, _template, 0).string;
 
 	if (output != NULL)
 	{
@@ -72,15 +72,33 @@ int main()
 	Buffer_Parametric_Binding_push(bindings, binding('T', "Int",
 			"int"));
 
-	assert_type_name(bindings, "<A,B>", "WeirdFishes_Idioteque");
-	assert_type_name(bindings, "<B,B,B>", "Idioteque_Idioteque_Idioteque");
-	assert_type_name(bindings, "<A    B>",  "WeirdFishesIdioteque");
-	assert_type_name(bindings, "<B\nB\n\nB>", "IdiotequeIdiotequeIdioteque");
+	assert_type_name(bindings, DEFAULT, "<A,B>", "WeirdFishes_Idioteque");
+	assert_type_name(bindings, DEFAULT, "<B,B,B>",
+			"Idioteque_Idioteque_Idioteque");
+	assert_type_name(bindings, DEFAULT, "<A    B>",  "WeirdFishesIdioteque");
+	assert_type_name(bindings, DEFAULT, "<B\nB\n\nB>",
+			"IdiotequeIdiotequeIdioteque");
 
-	assert_type_name(bindings, "<a,B>", NULL);
-	assert_type_name(bindings, "<B,B;B>", NULL);
-	assert_type_name(bindings, "<Ab>", NULL);
-	assert_type_name(bindings, "<B'BB>", NULL);
+	assert_type_name(bindings, SNAKE_CASE, "<A,B>", "_WeirdFishes_Idioteque");
+	assert_type_name(bindings, SNAKE_CASE, "<BB,B>",
+			"_Idioteque_Idioteque_Idioteque");
+	assert_type_name(bindings, SNAKE_CASE, "<A    B>",
+			"_WeirdFishes_Idioteque");
+	assert_type_name(bindings, SNAKE_CASE, "_<B\nB\n\nB>",
+			"_Idioteque_Idioteque_Idioteque");
+
+	assert_type_name(bindings, CAMEL_CASE, "<A,B>", "WeirdFishesIdioteque");
+	assert_type_name(bindings, CAMEL_CASE, "<BB,B>",
+			"IdiotequeIdiotequeIdioteque");
+	assert_type_name(bindings, CAMEL_CASE, "<A    B>",
+			"WeirdFishesIdioteque");
+	assert_type_name(bindings, CAMEL_CASE, "_<B\nB\n\nB>",
+			"IdiotequeIdiotequeIdioteque");
+
+	assert_type_name(bindings, DEFAULT, "<a,B>", NULL);
+	assert_type_name(bindings, DEFAULT, "<B,B;B>", NULL);
+	assert_type_name(bindings, DEFAULT, "<Ab>", NULL);
+	assert_type_name(bindings, DEFAULT, "<B'BB>", NULL);
 
 	assert_instance_name(bindings, "T", 0, "int");
 	assert_instance_name(bindings, "(T param", 1, "int");

@@ -61,27 +61,58 @@ struct String_Offset match_instance_name(
 	}
 }
 
-struct String_Offset match_type_name(struct Buffer_Parametric_Binding const* bindings,
+struct String_Offset match_type_name(
+		struct Buffer_Parametric_Binding const* bindings, enum Code_Style style,
 		struct Arena* arena, struct String const str, int offset)
 {
 	char* s = str.str;
+	int slen = str.length;
 	int consumed = 0;
+	enum {UNDERSCORE, BRACE} start = BRACE;
 
-	if (s[offset] != '<')
+	if (s[offset] == '<')
 	{
-		return make(String_empty(), 0);
+		start = BRACE;
+		consumed = 1;
+	}
+	else if (s[offset] == '_' && offset + 1 < slen && s[offset + 1] == '<')
+	{
+		start = UNDERSCORE;
+		consumed = 2;
 	}
 	else
 	{
-		consumed++;
+		return make(String_empty(), 0);
 	}
 
 	bool closed = false;
+	bool prefix_underscore = style == SNAKE_CASE
+			|| (style != CAMEL_CASE && start == UNDERSCORE);
+	enum {NONE, CONVERT, SNAKE_FIRST, SNAKE_REST} underscore_strategy = CONVERT;
 	struct String retval = String_init(arena, -1);
 
-	for (int idx = offset + 1; idx < str.length; idx++)
+	if (prefix_underscore)
+	{
+		retval = String_push(retval, '_');
+	}
+
+	switch (style)
+	{
+		case DEFAULT:
+			underscore_strategy = CONVERT;
+			break;
+		case SNAKE_CASE:
+			underscore_strategy = SNAKE_FIRST;
+			break;
+		case CAMEL_CASE:
+			underscore_strategy = NONE;
+			break;
+	}
+
+	for (int idx = offset + consumed; idx < slen; idx++)
 	{
 		char c = s[idx];
+
 		consumed++;
 
 		if (c == '>')
@@ -92,6 +123,15 @@ struct String_Offset match_type_name(struct Buffer_Parametric_Binding const* bin
 		else if (is_whitespace(c));
 		else if (isupper(c))
 		{
+			if (underscore_strategy == SNAKE_FIRST)
+			{
+				underscore_strategy = SNAKE_REST;
+			}
+			else if (underscore_strategy == SNAKE_REST)
+			{
+				retval = String_push(retval, '_');
+			}
+
 			struct Parametric_Binding const* binding =
 					Buffer_Parametric_Binding_find(bindings, c);
 
@@ -106,7 +146,10 @@ struct String_Offset match_type_name(struct Buffer_Parametric_Binding const* bin
 		}
 		else if (c == ',')
 		{
-			retval = String_push(retval, '_');
+			if (underscore_strategy == CONVERT)
+			{
+				retval = String_push(retval, '_');
+			}
 		}
 		else
 		{

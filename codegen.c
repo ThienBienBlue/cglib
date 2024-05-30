@@ -84,8 +84,8 @@ struct String codegen(struct Codegen_Args const args,
 		// default to appending the current character.
 		char c = str[i];
 		struct Arena binding_arena = binding_zero;
-		struct String_Offset append = match_type_name(bindings, &binding_arena,
-				template_string, i);
+		struct String_Offset append = match_type_name(bindings, args.style,
+				&binding_arena, template_string, i);
 
 		if (append.offset <= 0)
 		{

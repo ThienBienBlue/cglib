@@ -6,10 +6,18 @@
 #include "./primitives/String.h"
 #include "./primitives/Parametric_Binding.h"
 
+enum Code_Style
+{
+	DEFAULT,
+	SNAKE_CASE,
+	CAMEL_CASE
+};
+
 struct Codegen_Args
 {
 	struct Buffer_String const* includes;
 	struct Buffer_Parametric_Binding const* bindings;
+	enum Code_Style style;
 };
 
 /// Returns application of :args's bindings to :template.

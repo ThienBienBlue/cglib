@@ -10,6 +10,8 @@ char const* const INCLUDE = "-include";
 char const* const INPUT   = "-i";
 char const* const OUTPUT  = "-o";
 char const* const STRUCT  = "struct ";
+char const* const CAMEL_CASE_ARG = "--camel-case";
+char const* const SNAKE_CASE_ARG = "--snake-case";
 
 int const INCLUDE_LEN = 8;
 int const INPUT_LEN   = 2;
@@ -41,6 +43,7 @@ int main(int argc, char* argv[])
 	char* output = NULL;
 	char** args_includes = NULL;
 	int num_includes = 0;
+	enum Code_Style style = DEFAULT;
 
 	for (int i = 0; i < argc; i++)
 	{
@@ -53,6 +56,14 @@ int main(int argc, char* argv[])
 		else if (is_arg(OUTPUT, arg))
 		{
 			output = argv[++i];
+		}
+		else if (is_arg(SNAKE_CASE_ARG, arg))
+		{
+			style = SNAKE_CASE;
+		}
+		else if (is_arg(CAMEL_CASE_ARG, arg))
+		{
+			style = CAMEL_CASE;
 		}
 		else if (is_arg(INCLUDE, arg))
 		{
@@ -143,6 +154,7 @@ int main(int argc, char* argv[])
 
 	args.includes = includes;
 	args.bindings = bindings;
+	args.style = style;
 
 	// Validate the CLI Args.
 	if (input == NULL)

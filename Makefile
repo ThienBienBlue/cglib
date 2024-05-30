@@ -9,6 +9,7 @@ default: codegen
 
 clean:
 	rm tests/out/*
+	rm codegen
 
 tests: tests/out tests/out/String_Test tests/out/parsing_Test tests/out/codegen_Test tests/end_to_end_Test.sh
 
