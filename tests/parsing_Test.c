@@ -82,6 +82,8 @@ int main()
 	assert_type_name(bindings, SNAKE_CASE, "<A,B>", "_WeirdFishes_Idioteque");
 	assert_type_name(bindings, SNAKE_CASE, "<BB,B>",
 			"_Idioteque_Idioteque_Idioteque");
+	assert_type_name(bindings, SNAKE_CASE, "<BB,,,,,B>",
+			"_Idioteque_Idioteque_Idioteque");
 	assert_type_name(bindings, SNAKE_CASE, "<A    B>",
 			"_WeirdFishes_Idioteque");
 	assert_type_name(bindings, SNAKE_CASE, "_<B\nB\n\nB>",
@@ -89,6 +91,8 @@ int main()
 
 	assert_type_name(bindings, CAMEL_CASE, "<A,B>", "WeirdFishesIdioteque");
 	assert_type_name(bindings, CAMEL_CASE, "<BB,B>",
+			"IdiotequeIdiotequeIdioteque");
+	assert_type_name(bindings, CAMEL_CASE, "<BB,,,,,B>",
 			"IdiotequeIdiotequeIdioteque");
 	assert_type_name(bindings, CAMEL_CASE, "<A    B>",
 			"WeirdFishesIdioteque");

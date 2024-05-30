@@ -17,12 +17,11 @@ Sample usage
 
 Bindings only exist for ~A..Z~, thus there are only 26 possible bindings at a
 time. A side effect of restricting a binding to one of 26 capital letters is
-that ~<ABC>~ is not ambiguous.
+that ~<ABC>~ is not ambiguous and can drop the commas.
 
 ** Style
 
-This brings up the question of commas. Adding a comma will translate to one
-underscore ~_~.
+By default, adding a comma will translate to one underscore ~_~.
 
 ~Trio<ABC>~ where ~A=int~, ~B=String~, ~C=float~ will generate
 ~TrioIntStringFloat~.
@@ -31,6 +30,15 @@ underscore ~_~.
 
 For non-primitive bindings, an instance such as ~T val;~ will be generate
 ~struct String val;~. There is currently no support for dropping the ~struct~.
+
+Adding in parameters ~--snake-case~ or ~--camel-case~ will apply best effort
+styling.
+
+For snake-case:
+~Trio<ABC> == Trio_<A,B,C> == Trio<A,,B   C> == Trio_Int_String_Float~
+
+For camel-case:
+~Trio<ABC> == Trio_<A,B,C> == Trio<A,,B   C> == TrioIntStringFloat~
 
 ** Sample template file
 
