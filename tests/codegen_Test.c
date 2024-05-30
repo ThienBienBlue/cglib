@@ -37,6 +37,7 @@ int main()
 
 	args.bindings = bindings;
 	args.includes = includes;
+	args.style = DEFAULT;
 
 	char input1[] =
 			"#ifndef TEST1\n"
@@ -75,4 +76,28 @@ int main()
 			"}\n";
 
 	assert_codegen(args, input2, output2);
+
+	args.style = SNAKE_CASE;
+
+	char input_snake[] = "typedef struct { A f1; T f2 } Type<AT>";
+	char input_snake2[] = "typedef struct { A f1; T f2 } Type_<AT>";
+	char output_snake[] =
+			"#include \"String.h\"\n\n"
+			"typedef struct { struct WeirdFishes f1; int f2 } "
+			"Type_WeirdFishes_Int";
+
+	assert_codegen(args, input_snake, output_snake);
+	assert_codegen(args, input_snake2, output_snake);
+
+	args.style = CAMEL_CASE;
+
+	char input_camel[] = "typedef struct { A f1; T f2 } Type<AT>";
+	char input_camel2[] = "typedef struct { A f1; T f2 } Type_<A,T>";
+	char output_camel[] =
+			"#include \"String.h\"\n\n"
+			"typedef struct { struct WeirdFishes f1; int f2 } "
+			"TypeWeirdFishesInt";
+
+	assert_codegen(args, input_camel, output_camel);
+	assert_codegen(args, input_camel2, output_camel);
 }

@@ -86,27 +86,12 @@ struct String_Offset match_type_name(
 	}
 
 	bool closed = false;
-	bool prefix_underscore = style == SNAKE_CASE
-			|| (style != CAMEL_CASE && start == UNDERSCORE);
-	enum {NONE, CONVERT, SNAKE_FIRST, SNAKE_REST} underscore_strategy = CONVERT;
+	bool prefix_underscore = style == DEFAULT && start == UNDERSCORE;
 	struct String retval = String_init(arena, -1);
 
 	if (prefix_underscore)
 	{
 		retval = String_push(retval, '_');
-	}
-
-	switch (style)
-	{
-		case DEFAULT:
-			underscore_strategy = CONVERT;
-			break;
-		case SNAKE_CASE:
-			underscore_strategy = SNAKE_FIRST;
-			break;
-		case CAMEL_CASE:
-			underscore_strategy = NONE;
-			break;
 	}
 
 	for (int idx = offset + consumed; idx < slen; idx++)
@@ -123,11 +108,7 @@ struct String_Offset match_type_name(
 		else if (is_whitespace(c));
 		else if (isupper(c))
 		{
-			if (underscore_strategy == SNAKE_FIRST)
-			{
-				underscore_strategy = SNAKE_REST;
-			}
-			else if (underscore_strategy == SNAKE_REST)
+			if (style == SNAKE_CASE)
 			{
 				retval = String_push(retval, '_');
 			}
@@ -146,7 +127,7 @@ struct String_Offset match_type_name(
 		}
 		else if (c == ',')
 		{
-			if (underscore_strategy == CONVERT)
+			if (style == DEFAULT)
 			{
 				retval = String_push(retval, '_');
 			}
