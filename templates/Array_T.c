@@ -3,7 +3,7 @@
 
 #include "./Array_<T>.h"
 
-struct Array_<T>* Array_<T>_init(int capacity)
+struct Array<T>* Array<T>_init(int capacity)
 {
 	int actual_capacity = 0b1000;
 	while (actual_capacity < capacity)
@@ -13,7 +13,7 @@ struct Array_<T>* Array_<T>_init(int capacity)
 	if (array == NULL)
 		return NULL;
 
-	struct Array_<T>* retval = (struct Array_<T>*)malloc(sizeof(struct Array_<T>));
+	struct Array<T>* retval = (struct Array<T>*)malloc(sizeof(struct Array<T>));
 	if (retval == NULL)
 	{
 		free(array);
@@ -27,7 +27,7 @@ struct Array_<T>* Array_<T>_init(int capacity)
 	return retval;
 }
 
-void Array_<T>_free(struct Array_<T>* self)
+void Array<T>_free(struct Array<T>* self)
 {
 	if (self == NULL)
 		return;
@@ -35,7 +35,7 @@ void Array_<T>_free(struct Array_<T>* self)
 	free(self);
 }
 
-bool Array_<T>_push(struct Array_<T>* self, T item)
+bool Array<T>_push(struct Array<T>* self, T item)
 {
 	if (self == NULL)
 		return false;
@@ -55,7 +55,7 @@ bool Array_<T>_push(struct Array_<T>* self, T item)
 	return true;
 }
 
-bool Array_<T>_concat(struct Array_<T>* self, struct Array_<T>* with)
+bool Array<T>_concat(struct Array<T>* self, struct Array<T>* with)
 {
 	if (self == NULL)
 		return false;
@@ -63,7 +63,7 @@ bool Array_<T>_concat(struct Array_<T>* self, struct Array_<T>* with)
 	int original_length = self->length;
 	for (int idx = 0; idx < with->length; idx++)
 	{
-		if (!Array_<T>_push(self, with->array[idx]))
+		if (!Array<T>_push(self, with->array[idx]))
 		{
 			self->length = original_length;
 			return false;
@@ -72,7 +72,7 @@ bool Array_<T>_concat(struct Array_<T>* self, struct Array_<T>* with)
 	return true;
 }
 
-bool Array_<T>_pop_many(struct Array_<T>* self, int how_many)
+bool Array<T>_pop_many(struct Array<T>* self, int how_many)
 {
 	if (self == NULL || 0 <= self->length - how_many)
 	{
@@ -83,7 +83,7 @@ bool Array_<T>_pop_many(struct Array_<T>* self, int how_many)
 		return false;
 }
 
-bool Array_<T>_pop(struct Array_<T>* self)
+bool Array<T>_pop(struct Array<T>* self)
 {
-	return Array_<T>_pop_many(self, 1);
+	return Array<T>_pop_many(self, 1);
 }

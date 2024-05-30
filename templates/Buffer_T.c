@@ -3,14 +3,14 @@
 
 #include "./Buffer_<T>.h"
 
-struct Buffer_<T>* Buffer_<T>_init(int capacity)
+struct Buffer<T>* Buffer<T>_init(int capacity)
 {
 	if (capacity < 0)
 	{
 		capacity = 0;
 	}
 
-	struct Buffer_<T>* retval = (struct Buffer_<T>*)malloc(sizeof(struct Buffer_<T>) + capacity * sizeof(T));
+	struct Buffer<T>* retval = (struct Buffer<T>*)malloc(sizeof(struct Buffer<T>) + capacity * sizeof(T));
 
 	if (retval != NULL)
 	{
@@ -21,11 +21,11 @@ struct Buffer_<T>* Buffer_<T>_init(int capacity)
 	return retval;
 }
 
-struct Buffer_<T>* Buffer_<T>_filter(struct Buffer_<T>* self, bool (*filter)(T))
+struct Buffer<T>* Buffer<T>_filter(struct Buffer<T>* self, bool (*filter)(T))
 {
 	int capacity = self->capacity;
 	T* buffer = self->buffer;
-	struct Buffer_<T>* retval = Buffer_<T>_init(capacity);
+	struct Buffer<T>* retval = Buffer<T>_init(capacity);
 
 	for (int idx = 0; idx < capacity; idx++)
 	{
@@ -33,14 +33,14 @@ struct Buffer_<T>* Buffer_<T>_filter(struct Buffer_<T>* self, bool (*filter)(T))
 
 		if (filter(item))
 		{
-			Buffer_<T>_push(retval, item);
+			Buffer<T>_push(retval, item);
 		}
 	}
 
 	return retval;
 }
 
-bool Buffer_<T>_push(struct Buffer_<T>* self, T item)
+bool Buffer<T>_push(struct Buffer<T>* self, T item)
 {
 	if (self == NULL || self->capacity <= self->length)
 		return false;
@@ -48,7 +48,7 @@ bool Buffer_<T>_push(struct Buffer_<T>* self, T item)
 	return true;
 }
 
-bool Buffer_<T>_pop(struct Buffer_<T>* self)
+bool Buffer<T>_pop(struct Buffer<T>* self)
 {
 	if (self == NULL || self->length <= 0)
 	{
@@ -60,7 +60,7 @@ bool Buffer_<T>_pop(struct Buffer_<T>* self)
 	return true;
 }
 
-bool Buffer_<T>_swap(struct Buffer_<T>* self, int left_idx, int right_idx)
+bool Buffer<T>_swap(struct Buffer<T>* self, int left_idx, int right_idx)
 {
 	if (self == NULL)
 	{
