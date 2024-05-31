@@ -1,13 +1,7 @@
-#ifndef BUFFER_Parametric_Binding_H_
-#define BUFFER_Parametric_Binding_H_
-
 /**
  * This file was automatically generated to be a generic Buffer.
  * Buffers are C "arrays" that also bundles the :capacity and :length.
  */
-#include <stdbool.h>
-
-#include "./Parametric_Binding.h"
 
 struct Buffer_Parametric_Binding
 {
@@ -26,5 +20,3 @@ bool Buffer_Parametric_Binding_swap(struct Buffer_Parametric_Binding* self, int 
 
 struct Parametric_Binding const* Buffer_Parametric_Binding_find(
 		struct Buffer_Parametric_Binding const* bindings, char c);
-
-#endif  // BUFFER_Parametric_Binding_H_

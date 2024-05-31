@@ -1,9 +1,11 @@
 #include <stdbool.h>
 
+#include "./primitives/String.h"
+#include "./primitives/Parametric_Binding.h"
+#include "./primitives/Buffer_String.h"
+
 #include "./codegen.h"
 #include "./parsing.h"
-
-#include "./primitives/String.h"
 
 struct String codegen(struct Codegen_Args const args,
 		struct String const template_string)

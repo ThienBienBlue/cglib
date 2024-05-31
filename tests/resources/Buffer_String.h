@@ -1,3 +1,14 @@
+#ifndef BUFFER_String_H_
+#define BUFFER_String_H_
+
+/**
+ * This file was automatically generated to be a generic Buffer.
+ * Buffers are C "arrays" that also bundles the :capacity and :length.
+ */
+#include <stdbool.h>
+
+#include "./String.h"
+
 struct Buffer_String
 {
 	int capacity;
@@ -14,3 +25,5 @@ bool Buffer_String_push(struct Buffer_String* self, struct String item);
 bool Buffer_String_pop(struct Buffer_String* self);
 
 bool Buffer_String_swap(struct Buffer_String* self, int left_idx, int right_idx);
+
+#endif  // BUFFER_String_H_

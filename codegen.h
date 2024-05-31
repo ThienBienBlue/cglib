@@ -1,11 +1,3 @@
-#ifndef CODEGEN_H_
-#define CODEGEN_H_
-
-#include "./primitives/Buffer_Parametric_Binding.h"
-#include "./primitives/Buffer_String.h"
-#include "./primitives/String.h"
-#include "./primitives/Parametric_Binding.h"
-
 enum Code_Style
 {
 	DEFAULT,
@@ -26,5 +18,3 @@ struct Codegen_Args
 /// :returns The generated string.
 struct String codegen(struct Codegen_Args const args,
 		struct String const template_string);
-
-#endif

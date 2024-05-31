@@ -1,6 +1,3 @@
-#ifndef STRING_H_
-#define STRING_H_
-
 /**
  * Quick String manipulation for short lifetime strings via an Arena.
  */
@@ -40,5 +37,3 @@ struct String String_append(struct String s1, struct String s2);
 /// :returns a new String sharing the same :str buffer as :s if :c fits.
 ///  Otherwise EMPTY_STRING.
 struct String String_push(struct String s, char c);
-
-#endif

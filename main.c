@@ -1,10 +1,15 @@
 #include <ctype.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "./codegen.h"
 #include "./primitives/String.h"
+#include "./primitives/Parametric_Binding.h"
+#include "./primitives/Buffer_String.h"
+#include "./primitives/Buffer_Parametric_Binding.h"
+
+#include "./codegen.h"
 
 char const* const INCLUDE = "-include";
 char const* const INPUT   = "-i";

@@ -1,8 +1,9 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-#include "./String.h"
 #include "./Buffer_String.h"
+
+#include "./String.h"
 
 struct Buffer_String* Buffer_String_init(int capacity)
 {

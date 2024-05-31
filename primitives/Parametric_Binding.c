@@ -1,5 +1,5 @@
-#include "./Parametric_Binding.h"
 #include "./String.h"
+#include "./Parametric_Binding.h"
 
 struct Parametric_Binding Parametric_Binding_init(char c, char* type_name,
 		char* type_instance)
