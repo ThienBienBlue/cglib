@@ -1,5 +1,6 @@
 #include <stdbool.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "./String.h"
 #include "./Buffer_String.h"
@@ -41,12 +42,33 @@ struct Buffer_String* Buffer_String_filter(struct Buffer_String* self, bool (*fi
 	return retval;
 }
 
+bool write_to(struct Buffer_String* self, struct String item, int idx)
+{
+	// Assignment won't compile if struct String has const fields.
+	struct String* write = self->buffer + idx;
+	void* written = memmove(write, &item, sizeof(struct String));
+
+	return written != NULL;
+}
+
 bool Buffer_String_push(struct Buffer_String* self, struct String item)
 {
-	if (self == NULL || self->capacity <= self->length)
+
+	if (self != NULL && self->length < self->capacity)
+	{
+		bool retval = write_to(self, item, self->length);
+
+		if (retval)
+		{
+			self->length++;
+		}
+
+		return retval;
+	}
+	else
+	{
 		return false;
-	self->buffer[self->length++] = item;
-	return true;
+	}
 }
 
 bool Buffer_String_pop(struct Buffer_String* self)
@@ -68,17 +90,19 @@ bool Buffer_String_swap(struct Buffer_String* self, int left_idx, int right_idx)
 		return false;
 	}
 
-	int buffer_length = self->length;
+	int len = self->length;
 	struct String* buffer = self->buffer;
 
-	if (!(0 <= left_idx && left_idx < buffer_length && 0 <= right_idx && right_idx < buffer_length))
+	if (left_idx < 0 || len <= left_idx || right_idx < 0 || len <= right_idx)
 	{
 		return false;
 	}
 
-	struct String temp = buffer[left_idx];
-	buffer[left_idx] = buffer[right_idx];
-	buffer[right_idx] = temp;
+	struct String left = buffer[left_idx];
+	struct String right = buffer[right_idx];
 
-	return true;
+	bool left_written = write_to(self, right, left_idx);
+	bool right_written = write_to(self, left, right_idx);
+
+	return left_written && right_written;
 }

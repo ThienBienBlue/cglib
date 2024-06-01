@@ -1,5 +1,6 @@
 #include <stdbool.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "./Buffer_<T>.h"
 
@@ -40,12 +41,33 @@ struct Buffer<T>* Buffer<T>_filter(struct Buffer<T>* self, bool (*filter)(T))
 	return retval;
 }
 
+bool write_to(struct Buffer<T>* self, T item, int idx)
+{
+	// Assignment won't compile if T has const fields.
+	T* write = self->buffer + idx;
+	void* written = memmove(write, &item, sizeof(T));
+
+	return written != NULL;
+}
+
 bool Buffer<T>_push(struct Buffer<T>* self, T item)
 {
-	if (self == NULL || self->capacity <= self->length)
+
+	if (self != NULL && self->length < self->capacity)
+	{
+		bool retval = write_to(self, item, self->length);
+
+		if (retval)
+		{
+			self->length++;
+		}
+
+		return retval;
+	}
+	else
+	{
 		return false;
-	self->buffer[self->length++] = item;
-	return true;
+	}
 }
 
 bool Buffer<T>_pop(struct Buffer<T>* self)
@@ -67,17 +89,19 @@ bool Buffer<T>_swap(struct Buffer<T>* self, int left_idx, int right_idx)
 		return false;
 	}
 
-	int buffer_length = self->length;
+	int len = self->length;
 	T* buffer = self->buffer;
 
-	if (!(0 <= left_idx && left_idx < buffer_length && 0 <= right_idx && right_idx < buffer_length))
+	if (left_idx < 0 || len <= left_idx || right_idx < 0 || len <= right_idx)
 	{
 		return false;
 	}
 
-	T temp = buffer[left_idx];
-	buffer[left_idx] = buffer[right_idx];
-	buffer[right_idx] = temp;
+	T left = buffer[left_idx];
+	T right = buffer[right_idx];
 
-	return true;
+	bool left_written = write_to(self, right, left_idx);
+	bool right_written = write_to(self, left, right_idx);
+
+	return left_written && right_written;
 }
