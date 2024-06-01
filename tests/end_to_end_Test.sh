@@ -17,7 +17,7 @@ NC='\033[0m' # No Color
 test_result() {
     if [[ -n "$2" ]]; then
         echo -e "${RED}$1: FAILED See tests/out/$1.log${NC}"
-        echo $2 > "tests/out/$1.log"
+        echo "$2" > "tests/out/$1.log"
     else
         echo -e "${GREEN}$1: PASSED${NC}"
     fi
