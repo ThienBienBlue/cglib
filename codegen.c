@@ -15,12 +15,12 @@ struct String codegen(struct Codegen_Args const args,
 			: 2 * template_string.length;
 	struct Arena arena = Arena_init(init_amount);
 	struct Arena binding_zero = Arena_init(100);
-	struct String retval = String_init(&arena, -1);
+	struct String_Builder retval = String_Builder_init(&arena, -1);
 
 	// :include_state needs to be correctly set by end of each iteration.
 	// If there are includes, :include_state is primed after every newline.
 	struct Buffer_Parametric_Binding const* bindings = args.bindings;
-	char* str = template_string.str;
+	char const* str = template_string.str;
 	int str_len = template_string.length;
 
 	enum {DONE, PRIMED, LATENT} include_state = DONE;
@@ -61,8 +61,8 @@ struct String codegen(struct Codegen_Args const args,
 				struct String const* ibuf = includes->buffer;
 				int ilen = includes->length;
 
-				struct String prefix = String_from_cstring("#include \"");
-				struct String suffix = String_from_cstring("\"\n");
+				struct String prefix = String_wrap("#include \"");
+				struct String suffix = String_wrap("\"\n");
 
 				for (int j = 0; j < ilen; j++)
 				{
@@ -84,26 +84,36 @@ struct String codegen(struct Codegen_Args const args,
 
 		// Each iteration we either match on a type name, type instance, or
 		// default to appending the current character.
+		{
+			struct Arena binding_arena = binding_zero;
+			struct String_Offset append_type = match_type_name(bindings, args.style,
+					&binding_arena, template_string, i);
+
+			if (0 < append_type.offset)
+			{
+				retval = String_append(retval, append_type.string);
+				i += append_type.offset;
+
+				continue;
+			}
+		}
+
+		{
+			struct String_Offset append_instance = match_instance_name(bindings,
+					template_string, i);
+
+			if (0 < append_instance.offset)
+			{
+				retval = String_append(retval, append_instance.string);
+				i += append_instance.offset;
+
+				continue;
+			}
+		}
+
 		char c = str[i];
-		struct Arena binding_arena = binding_zero;
-		struct String_Offset append = match_type_name(bindings, args.style,
-				&binding_arena, template_string, i);
-
-		if (append.offset <= 0)
-		{
-			append = match_instance_name(bindings, template_string, i);
-		}
-
-		if (0 < append.offset)
-		{
-			retval = String_append(retval, append.string);
-			i += append.offset;
-		}
-		else
-		{
-			retval = String_push(retval, c);
-			i += 1;
-		}
+		retval = String_push(retval, c);
+		i += 1;
 
 		if (include_state != DONE && c == '\n')
 		{
@@ -111,5 +121,5 @@ struct String codegen(struct Codegen_Args const args,
 		}
 	}
 
-	return retval;
+	return String_Builder_build(retval);
 }

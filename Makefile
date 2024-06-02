@@ -1,6 +1,7 @@
 SHELL = /bin/bash
 CC = gcc
 CFLAGS = -Wall -Wextra
+OLEVEL = -O3
 DEBUG = -g
 
 .PHONY: clean tests
@@ -32,4 +33,7 @@ end_to_end_Test: codegen
 	bash ./tests/$@.sh
 
 codegen: main.c codegen.h codegen.c parsing.h parsing.c primitives/Buffer_Parametric_Binding.h primitives/Buffer_Parametric_Binding.c primitives/Buffer_String.h primitives/Buffer_String.c primitives/Parametric_Binding.h primitives/Parametric_Binding.c primitives/String.h primitives/String.c
+	$(CC) $(CFLAGS) $(OLEVEL) $$(echo $^ | tr ' ' '\n' | grep '.c$$') -o $@
+
+debug: main.c codegen.h codegen.c parsing.h parsing.c primitives/Buffer_Parametric_Binding.h primitives/Buffer_Parametric_Binding.c primitives/Buffer_String.h primitives/Buffer_String.c primitives/Parametric_Binding.h primitives/Parametric_Binding.c primitives/String.h primitives/String.c
 	$(CC) $(CFLAGS) $(DEBUG) $$(echo $^ | tr ' ' '\n' | grep '.c$$') -o $@

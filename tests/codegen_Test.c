@@ -16,7 +16,7 @@ struct Parametric_Binding binding(char c, char* t, char* i)
 
 void assert_codegen(struct Codegen_Args args, char* template, char* output)
 {
-	struct String _template = String_from_cstring(template);
+	struct String _template = String_wrap(template);
 	struct String const generated = codegen(args, _template);
 
 	assert((int)strlen(output) == generated.length);
@@ -39,7 +39,7 @@ int main()
 	Buffer_Parametric_Binding_push(bindings, binding('T', "Int",
 			"int"));
 
-	Buffer_String_push(includes, String_from_cstring("String.h"));
+	Buffer_String_push(includes, String_wrap("String.h"));
 
 	args.bindings = bindings;
 	args.includes = includes;

@@ -13,8 +13,8 @@ struct Arena zero;
 
 struct Parametric_Binding binding(char c, char* type_name, char* instance_name)
 {
-	struct String _type_name = String_from_cstring(type_name);
-	struct String _instance_name = String_from_cstring(instance_name);
+	struct String _type_name = String_wrap(type_name);
+	struct String _instance_name = String_wrap(instance_name);
 	struct Parametric_Binding binding = {
 		.parametric = c,
 		.type_name = _type_name,
@@ -28,7 +28,7 @@ void assert_type_name(struct Buffer_Parametric_Binding const* bindings,
 		enum Code_Style style, char* template, char* output)
 {
 	struct Arena arena = zero;
-	struct String _template = String_from_cstring(template);
+	struct String _template = String_wrap(template);
 	struct String parsed =
 			match_type_name(bindings, style, &arena, _template, 0).string;
 
@@ -46,7 +46,7 @@ void assert_type_name(struct Buffer_Parametric_Binding const* bindings,
 void assert_instance_name(struct Buffer_Parametric_Binding const* bindings,
 		char* template, int offset, char* output)
 {
-	struct String _template = String_from_cstring(template);
+	struct String _template = String_wrap(template);
 	struct String parsed =
 			match_instance_name(bindings, _template, offset).string;
 

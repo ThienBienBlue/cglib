@@ -35,13 +35,12 @@ bool is_arg(char const* expected, char* arg)
 
 struct String wrap(char const* const str)
 {
-	// Type casting hack. This file never modifies one of its consts.
-	return String_from_cstring((char*)str);
+	return String_wrap(str);
 }
 
 int main(int argc, char* argv[])
 {
-	struct String arg_bindings[26] = {0};
+	char* arg_bindings[26] = {0};
 	int num_bindings = 0;
 	int struct_instance = 0;  // Malloc enough space for instance names.
 	char* input = NULL;
@@ -94,14 +93,14 @@ int main(int argc, char* argv[])
 			char binds = arg[1];
 			int idx = binds - 'A';
 
-			if (arg_bindings[idx].length == 0)
+			if (arg_bindings[idx] == NULL)
 			{
 				num_bindings++;
 			}
 
-			arg_bindings[idx] = wrap(argv[++i]);
+			arg_bindings[idx] = argv[++i];
 			struct_instance += STRUCT_LEN;
-			struct_instance += arg_bindings[idx].length;
+			struct_instance += strlen(arg_bindings[idx]);
 		}
 	}
 
@@ -121,37 +120,48 @@ int main(int argc, char* argv[])
 
 	for (int i = 0; i < 26; i++)
 	{
-		struct String binding = arg_bindings[i];
-
-		if (0 < binding.length)
+		if (arg_bindings[i] != NULL)
 		{
+			struct String binding = wrap(arg_bindings[i]);
 			bool primitive = islower(binding.str[0]);
-			struct String type_name;
-			struct String instance_name;
 
+			// TODO: String declaring const fields means type_name cannot be
+			// declared then re-assigned.
 			if (primitive)
 			{
-				instance_name = binding;
-				type_name = String_init(&name_arena, binding.length);
+				struct String instance_name = binding;
+				struct String_Builder type_name =
+						String_Builder_init(&name_arena, binding.length);
+
 				type_name = String_append(type_name, binding);
 				type_name.str[0] += 'A' - 'a';
+
+				struct Parametric_Binding _binding = {
+					.parametric = 'A' + i,
+					.type_name = String_Builder_build(type_name),
+					.type_instance = instance_name
+				};
+
+				Buffer_Parametric_Binding_push(bindings, _binding);
 			}
 			else
 			{
-				type_name = binding;
-				instance_name = String_init(&name_arena,
+				struct String type_name = binding;
+				struct String_Builder instance_name =
+						String_Builder_init(&name_arena,
 						STRUCT_LEN + binding.length);
+
 				instance_name = String_append(instance_name, struct_str);
 				instance_name = String_append(instance_name, binding);
+
+				struct Parametric_Binding _binding = {
+					.parametric = 'A' + i,
+					.type_name = type_name,
+					.type_instance = String_Builder_build(instance_name)
+				};
+
+				Buffer_Parametric_Binding_push(bindings, _binding);
 			}
-
-			struct Parametric_Binding _binding;
-
-			_binding.parametric = 'A' + i;
-			_binding.type_name = type_name;
-			_binding.type_instance = instance_name;
-
-			Buffer_Parametric_Binding_push(bindings, _binding);
 		}
 	}
 
@@ -210,12 +220,12 @@ int main(int argc, char* argv[])
 	}
 
 	struct Arena input_arena = Arena_init(input_length);
-	struct String input_str = String_init(&input_arena, input_length);
+	struct String_Builder input_str = String_Builder_init(&input_arena, input_length);
 
 	fread(input_str.str, sizeof(char), input_length, input_file);
 	input_str.length = input_length;
 
-	struct String output_str = codegen(args, input_str);
+	struct String output_str = codegen(args, String_Builder_build(input_str));
 	//if (generated == NULL)
 	//{
 	//	fprintf(stderr, "Unable to generate anything from the template file.\n");

@@ -26,19 +26,17 @@ bool is_instance_char(char c)
 
 struct String_Offset make(struct String string, int offset)
 {
-	struct String_Offset retval;
-
-	retval.string = string;
-	retval.offset = offset;
-
-	return retval;
+	return (struct String_Offset) {
+		.string = string,
+		.offset = offset
+	};
 }
 
 struct String_Offset match_instance_name(
 		struct Buffer_Parametric_Binding const* bindings,
 		struct String const str, int offset)
 {
-	char* s = str.str;
+	char const* s = str.str;
 	char instance = s[offset];
 	bool valid_prev_char = (offset - 1 < 0) || is_instance_char(s[offset - 1]);
 	bool valid_next_char = (str.length <= offset + 1) ||
@@ -69,7 +67,7 @@ struct String_Offset match_type_name(
 		struct Buffer_Parametric_Binding const* bindings, enum Code_Style style,
 		struct Arena* arena, struct String const str, int offset)
 {
-	char* s = str.str;
+	char const* s = str.str;
 	int slen = str.length;
 	int consumed = 0;
 	enum {UNDERSCORE, BRACE} start = BRACE;
@@ -91,7 +89,7 @@ struct String_Offset match_type_name(
 
 	bool closed = false;
 	bool prefix_underscore = style == DEFAULT && start == UNDERSCORE;
-	struct String retval = String_init(arena, -1);
+	struct String_Builder retval = String_Builder_init(arena, -1);
 
 	if (prefix_underscore)
 	{
@@ -144,7 +142,7 @@ struct String_Offset match_type_name(
 
 	if (closed)
 	{
-		return make(retval, consumed);
+		return make(String_Builder_build(retval), consumed);
 	}
 	else
 	{
