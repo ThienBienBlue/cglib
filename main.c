@@ -40,7 +40,17 @@ struct String wrap(char const* const str)
 
 int main(int argc, char* argv[])
 {
-	char* arg_bindings[26] = {0};
+	struct Buffer_String* arg_bindings = Buffer_String_init(26);
+	{
+		struct String zero = {0};
+
+		for (int i = 0; i < 26; i++)
+		{
+
+			Buffer_String_push(arg_bindings, zero);
+		}
+	}
+
 	int num_bindings = 0;
 	int struct_instance = 0;  // Malloc enough space for instance names.
 	char* input = NULL;
@@ -93,14 +103,14 @@ int main(int argc, char* argv[])
 			char binds = arg[1];
 			int idx = binds - 'A';
 
-			if (arg_bindings[idx] == NULL)
+			if (arg_bindings[idx].length == 0)
 			{
 				num_bindings++;
 			}
 
-			arg_bindings[idx] = argv[++i];
+			Buffer_String_put(arg_bindings, idx, wrap(argv[++i]));
 			struct_instance += STRUCT_LEN;
-			struct_instance += strlen(arg_bindings[idx]);
+			struct_instance += arg_bindings->buffer[idx].length;
 		}
 	}
 
@@ -120,9 +130,10 @@ int main(int argc, char* argv[])
 
 	for (int i = 0; i < 26; i++)
 	{
-		if (arg_bindings[i] != NULL)
+		struct String binding = arg_bindings->buffer[i];
+
+		if (0 < binding.length)
 		{
-			struct String binding = wrap(arg_bindings[i]);
 			bool primitive = islower(binding.str[0]);
 
 			// TODO: String declaring const fields means type_name cannot be
