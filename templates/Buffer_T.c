@@ -41,7 +41,7 @@ struct Buffer<T>* Buffer<T>_filter(struct Buffer<T>* self, bool (*filter)(T))
 	return retval;
 }
 
-bool write_to(struct Buffer<T>* self, T item, int idx)
+bool Buffer<T>_write_to(struct Buffer<T>* self, T item, int idx)
 {
 	// Assignment won't compile if T has const fields.
 	T* write = self->buffer + idx;

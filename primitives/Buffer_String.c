@@ -42,7 +42,7 @@ struct Buffer_String* Buffer_String_filter(struct Buffer_String* self, bool (*fi
 	return retval;
 }
 
-bool write_to(struct Buffer_String* self, struct String item, int idx)
+bool Buffer_String_write_to(struct Buffer_String* self, struct String item, int idx)
 {
 	// Assignment won't compile if struct String has const fields.
 	struct String* write = self->buffer + idx;
@@ -56,7 +56,7 @@ bool Buffer_String_push(struct Buffer_String* self, struct String item)
 
 	if (self != NULL && self->length < self->capacity)
 	{
-		bool retval = write_to(self, item, self->length);
+		bool retval = Buffer_String_write_to(self, item, self->length);
 
 		if (retval)
 		{
@@ -101,8 +101,8 @@ bool Buffer_String_swap(struct Buffer_String* self, int left_idx, int right_idx)
 	struct String left = buffer[left_idx];
 	struct String right = buffer[right_idx];
 
-	bool left_written = write_to(self, right, left_idx);
-	bool right_written = write_to(self, left, right_idx);
+	bool left_written = Buffer_String_write_to(self, right, left_idx);
+	bool right_written = Buffer_String_write_to(self, left, right_idx);
 
 	return left_written && right_written;
 }

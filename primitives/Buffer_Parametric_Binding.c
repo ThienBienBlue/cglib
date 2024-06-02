@@ -43,7 +43,7 @@ struct Buffer_Parametric_Binding* Buffer_Parametric_Binding_filter(struct Buffer
 	return retval;
 }
 
-bool write_to(struct Buffer_Parametric_Binding* self, struct Parametric_Binding item, int idx)
+bool Buffer_Parametric_Binding_write_to(struct Buffer_Parametric_Binding* self, struct Parametric_Binding item, int idx)
 {
 	// Assignment won't compile if struct Parametric_Binding has const fields.
 	struct Parametric_Binding* write = self->buffer + idx;
@@ -57,7 +57,7 @@ bool Buffer_Parametric_Binding_push(struct Buffer_Parametric_Binding* self, stru
 
 	if (self != NULL && self->length < self->capacity)
 	{
-		bool retval = write_to(self, item, self->length);
+		bool retval = Buffer_Parametric_Binding_write_to(self, item, self->length);
 
 		if (retval)
 		{
@@ -102,8 +102,24 @@ bool Buffer_Parametric_Binding_swap(struct Buffer_Parametric_Binding* self, int 
 	struct Parametric_Binding left = buffer[left_idx];
 	struct Parametric_Binding right = buffer[right_idx];
 
-	bool left_written = write_to(self, right, left_idx);
-	bool right_written = write_to(self, left, right_idx);
+	bool left_written = Buffer_Parametric_Binding_write_to(self, right, left_idx);
+	bool right_written = Buffer_Parametric_Binding_write_to(self, left, right_idx);
 
 	return left_written && right_written;
+}
+
+struct Parametric_Binding const* Buffer_Parametric_Binding_find(
+		struct Buffer_Parametric_Binding const *binding, char parametric)
+{
+	for (int idx = 0; idx < binding->length; idx++)
+	{
+		char matching_parametric = binding->buffer[idx].parametric;
+
+		if (parametric == matching_parametric)
+		{
+			return binding->buffer + idx;
+		}
+	}
+
+	return NULL;
 }

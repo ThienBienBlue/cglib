@@ -43,7 +43,7 @@ struct Buffer_String* Buffer_String_filter(struct Buffer_String* self, bool (*fi
 	return retval;
 }
 
-bool write_to(struct Buffer_String* self, struct String item, int idx)
+bool Buffer_String_write_to(struct Buffer_String* self, struct String item, int idx)
 {
 	// Assignment won't compile if struct String has const fields.
 	struct String* write = self->buffer + idx;
