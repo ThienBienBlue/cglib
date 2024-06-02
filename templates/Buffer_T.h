@@ -18,6 +18,8 @@ struct Buffer<T>* Buffer<T>_init(int capacity);
 
 struct Buffer<T>* Buffer<T>_filter(struct Buffer<T>* self, bool (*filter)(T));
 
+bool Buffer<T>_put(struct Buffer<T>* self, int idx, T item);
+
 bool Buffer<T>_push(struct Buffer<T>* self, T item);
 
 bool Buffer<T>_pop(struct Buffer<T>* self);

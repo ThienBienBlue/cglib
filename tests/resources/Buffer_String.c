@@ -43,28 +43,32 @@ struct Buffer_String* Buffer_String_filter(struct Buffer_String* self, bool (*fi
 	return retval;
 }
 
-bool Buffer_String_write_to(struct Buffer_String* self, struct String item, int idx)
+bool Buffer_String_put(struct Buffer_String* self, int idx, struct String item)
 {
-	// Assignment won't compile if struct String has const fields.
-	struct String* write = self->buffer + idx;
-	void* written = memmove(write, &item, sizeof(struct String));
+	if (self != NULL && idx < self->capacity)
+	{
+		// Assignment won't compile if struct String has const fields.
+		struct String* write = self->buffer + idx;
+		void* written = memmove(write, &item, sizeof(struct String));
 
-	return written != NULL;
+		if (written != NULL && self->length <= idx)
+		{
+			self->length = idx + 1;
+		}
+
+		return written != NULL;
+	}
+	else
+	{
+		return false;
+	}
 }
 
 bool Buffer_String_push(struct Buffer_String* self, struct String item)
 {
-
-	if (self != NULL && self->length < self->capacity)
+	if (self != NULL)
 	{
-		bool retval = write_to(self, item, self->length);
-
-		if (retval)
-		{
-			self->length++;
-		}
-
-		return retval;
+		return Buffer_String_put(self, self->length, item);
 	}
 	else
 	{
@@ -102,8 +106,8 @@ bool Buffer_String_swap(struct Buffer_String* self, int left_idx, int right_idx)
 	struct String left = buffer[left_idx];
 	struct String right = buffer[right_idx];
 
-	bool left_written = write_to(self, right, left_idx);
-	bool right_written = write_to(self, left, right_idx);
+	bool left_written = Buffer_String_put(self, right_idx, left);
+	bool right_written = Buffer_String_put(self, left_idx, right);
 
 	return left_written && right_written;
 }

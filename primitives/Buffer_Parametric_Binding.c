@@ -43,28 +43,32 @@ struct Buffer_Parametric_Binding* Buffer_Parametric_Binding_filter(struct Buffer
 	return retval;
 }
 
-bool Buffer_Parametric_Binding_write_to(struct Buffer_Parametric_Binding* self, struct Parametric_Binding item, int idx)
+bool Buffer_Parametric_Binding_put(struct Buffer_Parametric_Binding* self, int idx, struct Parametric_Binding item)
 {
-	// Assignment won't compile if struct Parametric_Binding has const fields.
-	struct Parametric_Binding* write = self->buffer + idx;
-	void* written = memmove(write, &item, sizeof(struct Parametric_Binding));
+	if (self != NULL && idx < self->capacity)
+	{
+		// Assignment won't compile if struct Parametric_Binding has const fields.
+		struct Parametric_Binding* write = self->buffer + idx;
+		void* written = memmove(write, &item, sizeof(struct Parametric_Binding));
 
-	return written != NULL;
+		if (written != NULL && self->length <= idx)
+		{
+			self->length = idx + 1;
+		}
+
+		return written != NULL;
+	}
+	else
+	{
+		return false;
+	}
 }
 
 bool Buffer_Parametric_Binding_push(struct Buffer_Parametric_Binding* self, struct Parametric_Binding item)
 {
-
-	if (self != NULL && self->length < self->capacity)
+	if (self != NULL)
 	{
-		bool retval = Buffer_Parametric_Binding_write_to(self, item, self->length);
-
-		if (retval)
-		{
-			self->length++;
-		}
-
-		return retval;
+		return Buffer_Parametric_Binding_put(self, self->length, item);
 	}
 	else
 	{
@@ -102,8 +106,8 @@ bool Buffer_Parametric_Binding_swap(struct Buffer_Parametric_Binding* self, int 
 	struct Parametric_Binding left = buffer[left_idx];
 	struct Parametric_Binding right = buffer[right_idx];
 
-	bool left_written = Buffer_Parametric_Binding_write_to(self, right, left_idx);
-	bool right_written = Buffer_Parametric_Binding_write_to(self, left, right_idx);
+	bool left_written = Buffer_Parametric_Binding_put(self, right_idx, left);
+	bool right_written = Buffer_Parametric_Binding_put(self, left_idx, right);
 
 	return left_written && right_written;
 }

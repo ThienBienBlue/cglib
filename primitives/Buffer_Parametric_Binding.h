@@ -12,6 +12,10 @@ struct Buffer_Parametric_Binding
 
 struct Buffer_Parametric_Binding* Buffer_Parametric_Binding_init(int capacity);
 
+struct Buffer_Parametric_Binding* Buffer_Parametric_Binding_filter(struct Buffer_Parametric_Binding* self, bool (*filter)(struct Parametric_Binding));
+
+bool Buffer_Parametric_Binding_put(struct Buffer_Parametric_Binding* self, int idx, struct Parametric_Binding item);
+
 bool Buffer_Parametric_Binding_push(struct Buffer_Parametric_Binding* self, struct Parametric_Binding item);
 
 bool Buffer_Parametric_Binding_pop(struct Buffer_Parametric_Binding* self);

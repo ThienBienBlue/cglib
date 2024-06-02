@@ -41,28 +41,32 @@ struct Buffer<T>* Buffer<T>_filter(struct Buffer<T>* self, bool (*filter)(T))
 	return retval;
 }
 
-bool Buffer<T>_write_to(struct Buffer<T>* self, T item, int idx)
+bool Buffer<T>_put(struct Buffer<T>* self, int idx, T item)
 {
-	// Assignment won't compile if T has const fields.
-	T* write = self->buffer + idx;
-	void* written = memmove(write, &item, sizeof(T));
+	if (self != NULL && idx < self->capacity)
+	{
+		// Assignment won't compile if T has const fields.
+		T* write = self->buffer + idx;
+		void* written = memmove(write, &item, sizeof(T));
 
-	return written != NULL;
+		if (written != NULL && self->length <= idx)
+		{
+			self->length = idx + 1;
+		}
+
+		return written != NULL;
+	}
+	else
+	{
+		return false;
+	}
 }
 
 bool Buffer<T>_push(struct Buffer<T>* self, T item)
 {
-
-	if (self != NULL && self->length < self->capacity)
+	if (self != NULL)
 	{
-		bool retval = write_to(self, item, self->length);
-
-		if (retval)
-		{
-			self->length++;
-		}
-
-		return retval;
+		return Buffer<T>_put(self, self->length, item);
 	}
 	else
 	{
@@ -100,8 +104,8 @@ bool Buffer<T>_swap(struct Buffer<T>* self, int left_idx, int right_idx)
 	T left = buffer[left_idx];
 	T right = buffer[right_idx];
 
-	bool left_written = write_to(self, right, left_idx);
-	bool right_written = write_to(self, left, right_idx);
+	bool left_written = Buffer<T>_put(self, right_idx, left);
+	bool right_written = Buffer<T>_put(self, left_idx, right);
 
 	return left_written && right_written;
 }
