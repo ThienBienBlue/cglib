@@ -7,6 +7,7 @@
 #include "./primitives/String.h"
 #include "./primitives/Parametric_Binding.h"
 #include "./primitives/Buffer_String.h"
+#include "./primitives/Buffer_26_String.h"
 #include "./primitives/Buffer_Parametric_Binding.h"
 
 #include "./codegen.h"
@@ -23,34 +24,47 @@ int const INPUT_LEN   = 2;
 int const OUTPUT_LEN  = 2;
 int const STRUCT_LEN  = 7;
 
-bool is_binding(char* arg)
+enum Binding_Type
+{
+	PRIMITIVE,
+	COMPOUND,
+	LITERAL
+};
+
+static bool is_binding(char* arg)
 {
 	return strlen(arg) == 2 && arg[0] == '-' && isupper(arg[1]);
 }
 
-bool is_arg(char const* expected, char* arg)
+static bool is_arg(char const* expected, char* arg)
 {
 	return strcmp(expected, arg) == 0;
 }
 
-struct String wrap(char const* const str)
+static struct String wrap(char const* const str)
 {
 	return String_wrap(str);
 }
 
+static enum Binding_Type matched_type(struct String arg)
+{
+	if (0 < arg.length && islower(arg.str[0]))
+	{
+		return PRIMITIVE;
+	}
+	else if (0 < arg.length && isupper(arg.str[0]))
+	{
+		return COMPOUND;
+	}
+	else
+	{
+		return LITERAL;
+	}
+}
+
 int main(int argc, char* argv[])
 {
-	struct Buffer_String* arg_bindings = Buffer_String_init(26);
-	{
-		struct String zero = {0};
-
-		for (int i = 0; i < 26; i++)
-		{
-
-			Buffer_String_push(arg_bindings, zero);
-		}
-	}
-
+	struct Buffer_26_String arg_bindings = Buffer_26_String_init(String_empty());
 	int num_bindings = 0;
 	int struct_instance = 0;  // Malloc enough space for instance names.
 	char* input = NULL;
@@ -103,14 +117,14 @@ int main(int argc, char* argv[])
 			char binds = arg[1];
 			int idx = binds - 'A';
 
-			if (arg_bindings[idx].length == 0)
+			if (arg_bindings.buffer[idx].length == 0)
 			{
 				num_bindings++;
 			}
 
-			Buffer_String_put(arg_bindings, idx, wrap(argv[++i]));
+			Buffer_26_String_put(&arg_bindings, idx, wrap(argv[++i]));
 			struct_instance += STRUCT_LEN;
-			struct_instance += arg_bindings->buffer[idx].length;
+			struct_instance += arg_bindings.buffer[idx].length;
 		}
 	}
 
@@ -130,15 +144,15 @@ int main(int argc, char* argv[])
 
 	for (int i = 0; i < 26; i++)
 	{
-		struct String binding = arg_bindings->buffer[i];
+		struct String binding = arg_bindings.buffer[i];
 
 		if (0 < binding.length)
 		{
-			bool primitive = islower(binding.str[0]);
+			enum Binding_Type type = matched_type(binding);
 
 			// TODO: String declaring const fields means type_name cannot be
 			// declared then re-assigned.
-			if (primitive)
+			if (type == PRIMITIVE)
 			{
 				struct String instance_name = binding;
 				struct String_Builder type_name =
@@ -155,7 +169,7 @@ int main(int argc, char* argv[])
 
 				Buffer_Parametric_Binding_push(bindings, _binding);
 			}
-			else
+			else if (type == COMPOUND)
 			{
 				struct String type_name = binding;
 				struct String_Builder instance_name =
@@ -173,14 +187,26 @@ int main(int argc, char* argv[])
 
 				Buffer_Parametric_Binding_push(bindings, _binding);
 			}
+			else
+			{
+				struct String type_name = binding;
+				struct String instance_name = binding;
+				struct Parametric_Binding _binding = {
+					.parametric = 'A' + i,
+					.type_name = type_name,
+					.type_instance = instance_name
+				};
+
+				Buffer_Parametric_Binding_push(bindings, _binding);
+			}
 		}
 	}
 
-	struct Codegen_Args args;
-
-	args.includes = includes;
-	args.bindings = bindings;
-	args.style = style;
+	struct Codegen_Args args = {
+		.includes = includes,
+		.bindings = bindings,
+		.style = style
+	};
 
 	// Validate the CLI Args.
 	if (input == NULL)
