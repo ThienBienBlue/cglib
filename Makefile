@@ -13,7 +13,7 @@ clean:
 	rm tests/out/*
 	rm codegen
 
-tests: tests/out String_Test parsing_Test codegen_Test end_to_end_Test
+tests: tests/out String_Test parsing_Test codegen_Test end_to_end_Test FM_Hash_Map_Int_Float_Test
 
 tests/out:
 	mkdir tests/out
@@ -32,6 +32,19 @@ codegen_Test: tests/out tests/codegen_Test.c parsing.h parsing.c codegen.h codeg
 
 end_to_end_Test: codegen
 	bash ./tests/$@.sh
+
+generated:
+	mkdir generated
+
+FM_Hash_Map_Int_Float_Test: codegen tests/FM_Hash_Map_Int_Float_Test.c generated/FM_Hash_Map_Int_Float.h generated/FM_Hash_Map_Int_Float.c
+	$(CC) $(CFLAGS) $(DEBUG) $$(echo $^ | tr ' ' '\n' | grep '.c$$') -o ./tests/out/$@
+	./tests/out/$@
+
+generated/FM_Hash_Map_Int_Float.h: codegen generated templates/FM_Hash_Map_KV.h
+	./codegen -i templates/FM_Hash_Map_KV.h -o generated/FM_Hash_Map_Int_Float.h -K int -V float --snake-case
+
+generated/FM_Hash_Map_Int_Float.c: codegen generated templates/FM_Hash_Map_KV.c
+	./codegen -i templates/FM_Hash_Map_KV.c -o generated/FM_Hash_Map_Int_Float.c -K int -V float --snake-case
 
 codegen: $(FILES)
 	$(CC) $(CFLAGS) $(OLEVEL) $$(echo $^ | tr ' ' '\n' | grep '.c$$') -o $@
