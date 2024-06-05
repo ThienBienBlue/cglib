@@ -21,7 +21,7 @@ static int coerce_idx(int idx, int capacity)
 static int matching_offset(struct FM_Hash_Map<KV>* self, K target, int start)
 {
 	int capacity = self->capacity;
-	int* displacement = self->rh_displacements;
+	int* displacements = self->rh_displacements;
 	K* keys = self->keys;
 	bool (*eq)(K, K) = self->eq;
 
@@ -34,10 +34,10 @@ static int matching_offset(struct FM_Hash_Map<KV>* self, K target, int start)
 	for (int offset = 0; offset < capacity; offset++)
 	{
 		int i = (start + offset) % capacity;
-		int disp = displacement[i];
+		int disp = displacements[i];
 		K key = keys[i];
 
-		if (disp < 0)
+		if (disp < offset)
 		{
 			return -1;
 		}
@@ -109,15 +109,10 @@ bool FM_Hash_Map<KV>_put(struct FM_Hash_Map<KV>* self, K k, V v)
 {
 	K* keys = self->keys;
 	V* values = self->values;
-	int* displacement = self->rh_displacements;
+	int* displacements = self->rh_displacements;
 	int capacity = self->capacity;
 	int length = self->length;
 	bool (*eq)(K, K) = self->eq;
-
-	if (capacity < length)
-	{
-		return false;
-	}
 
 	int idx = coerce_idx(self->hash(k), self->capacity);
 
@@ -134,13 +129,13 @@ bool FM_Hash_Map<KV>_put(struct FM_Hash_Map<KV>* self, K k, V v)
 		int i = (idx + offset) % capacity;
 		K key = keys[i];
 		V value = values[i];
-		int disp = displacement[i];
+		int disp = displacements[i];
 
 		if (disp < 0)
 		{
 			keys[i] = k;
 			values[i] = v;
-			displacement[i] = key_disp;
+			displacements[i] = key_disp;
 			self->length++;
 
 			return true;
@@ -153,9 +148,14 @@ bool FM_Hash_Map<KV>_put(struct FM_Hash_Map<KV>* self, K k, V v)
 		}
 		else if (disp < key_disp)
 		{
+			if (capacity <= length)
+			{
+				return false;
+			}
+
 			keys[i] = k;
 			values[i] = v;
-			displacement[i] = key_disp;
+			displacements[i] = key_disp;
 
 			k = key;
 			v = value;
@@ -166,4 +166,51 @@ bool FM_Hash_Map<KV>_put(struct FM_Hash_Map<KV>* self, K k, V v)
 	}
 
 	return false;
+}
+
+bool FM_Hash_Map<KV>_remove(struct FM_Hash_Map<KV>* self, K k)
+{
+	K* keys = self->keys;
+	V* values = self->values;
+	int* displacements = self->rh_displacements;
+	int capacity = self->capacity;
+
+	int idx = coerce_idx(self->hash(k), capacity);
+	int offset = matching_offset(self, k, idx);
+
+	if (0 <= offset)
+	{
+		self->length--;
+	}
+	else
+	{
+		return false;
+	}
+
+	for (; offset + 1 < capacity; offset++)
+	{
+		int i_shift = (idx + offset) % capacity;
+		int i_with = (idx + offset + 1) % capacity;
+		int disp_with = displacements[i_with];
+
+		if (disp_with <= 0)
+		{
+			displacements[i_shift] = -1;
+
+			return true;
+		}
+		else
+		{
+			K k_with = keys[i_with];
+			V v_with = values[i_with];
+
+			keys[i_shift] = k_with;
+			values[i_shift] = v_with;
+			displacements[i_shift] = disp_with - 1;
+		}
+	}
+
+	displacements[coerce_idx(idx - 1, capacity)] = -1;
+
+	return true;
 }
