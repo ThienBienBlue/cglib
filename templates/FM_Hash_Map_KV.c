@@ -122,7 +122,7 @@ bool FM_Hash_Map<KV>_put(struct FM_Hash_Map<KV>* self, K k, V v)
 	}
 
 	int offset = 0;
-	int key_disp = 0;
+	int kd = 0;
 
 	for (; offset < capacity; offset++)
 	{
@@ -131,22 +131,7 @@ bool FM_Hash_Map<KV>_put(struct FM_Hash_Map<KV>* self, K k, V v)
 		V value = values[i];
 		int disp = displacements[i];
 
-		if (disp < 0)
-		{
-			keys[i] = k;
-			values[i] = v;
-			displacements[i] = key_disp;
-			self->length++;
-
-			return true;
-		}
-		else if (eq(key, k))
-		{
-			values[i] = v;
-
-			return true;
-		}
-		else if (disp < key_disp)
+		if (disp < kd)
 		{
 			if (capacity <= length)
 			{
@@ -155,14 +140,29 @@ bool FM_Hash_Map<KV>_put(struct FM_Hash_Map<KV>* self, K k, V v)
 
 			keys[i] = k;
 			values[i] = v;
-			displacements[i] = key_disp;
+			displacements[i] = kd;
 
-			k = key;
-			v = value;
-			key_disp = disp;
+			if (disp < 0)
+			{
+				self->length++;
+
+				return true;
+			}
+			else
+			{
+				k = key;
+				v = value;
+				kd = disp;
+			}
+		}
+		else if (eq(key, k))
+		{
+			values[i] = v;
+
+			return true;
 		}
 
-		key_disp++;
+		kd++;
 	}
 
 	return false;
