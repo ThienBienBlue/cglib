@@ -31,6 +31,12 @@ enum Binding_Type
 	LITERAL
 };
 
+struct String_String
+{
+	struct String s1;
+	struct String s2;
+};
+
 static bool is_binding(char* arg)
 {
 	return strlen(arg) == 2 && arg[0] == '-' && isupper(arg[1]);
@@ -46,20 +52,56 @@ static struct String wrap(char const* const str)
 	return String_wrap(str);
 }
 
-static enum Binding_Type matched_type(struct String arg)
+struct String_String type_instance(struct Arena* arena, struct String arg)
 {
-	if (0 < arg.length && islower(arg.str[0]))
+	if (arg.length <= 0)
+		return (struct String_String) {0};
+	if (!isalpha(arg.str[0]))
+		return (struct String_String) {arg, arg};
+
+	int ptr_offset = 0;
+
+	while (ptr_offset < arg.length
+			&& arg.str[arg.length - ptr_offset - 1] == '*')
 	{
-		return PRIMITIVE;
+		ptr_offset++;
 	}
-	else if (0 < arg.length && isupper(arg.str[0]))
+
+	struct String type;
+	struct String instance;
+
+	if (islower(arg.str[0]))
 	{
-		return COMPOUND;
+		// Primitive case
+		struct String_Builder _type = String_Builder_init(arena, arg.length);
+
+		_type = String_append(_type, arg);
+		_type.str[0] += 'A' - 'a';
+
+		type = String_Builder_build(_type);
+		instance = arg;
+	}
+	else if (isupper(arg.str[0]))
+	{
+		// Compound type case.
+		struct String_Builder _instance = String_Builder_init(arena,
+				STRUCT_LEN + arg.length);
+
+		_instance = String_append(_instance, wrap(STRUCT));
+		_instance = String_append(_instance, arg);
+
+		type = arg;
+		instance = String_Builder_build(_instance);
 	}
 	else
 	{
-		return LITERAL;
+		type = arg;
+		instance = arg;
 	}
+
+	type.length -= ptr_offset;
+
+	return (struct String_String) {type, instance};
 }
 
 int main(int argc, char* argv[])
@@ -129,7 +171,6 @@ int main(int argc, char* argv[])
 	}
 
 	struct Arena name_arena = Arena_init(struct_instance);
-	struct String struct_str = wrap(STRUCT);
 
 	struct Buffer_String* includes = Buffer_String_init(num_includes);
 	struct Buffer_Parametric_Binding* bindings =
@@ -148,57 +189,15 @@ int main(int argc, char* argv[])
 
 		if (0 < binding.length)
 		{
-			enum Binding_Type type = matched_type(binding);
+			struct String_String binding_parsed = type_instance(&name_arena,
+					binding);
+			struct Parametric_Binding _binding = {
+				.parametric = 'A' + i,
+				.type_name = binding_parsed.s1,
+				.type_instance = binding_parsed.s2
+			};
 
-			// TODO: String declaring const fields means type_name cannot be
-			// declared then re-assigned.
-			if (type == PRIMITIVE)
-			{
-				struct String instance_name = binding;
-				struct String_Builder type_name =
-						String_Builder_init(&name_arena, binding.length);
-
-				type_name = String_append(type_name, binding);
-				type_name.str[0] += 'A' - 'a';
-
-				struct Parametric_Binding _binding = {
-					.parametric = 'A' + i,
-					.type_name = String_Builder_build(type_name),
-					.type_instance = instance_name
-				};
-
-				Buffer_Parametric_Binding_push(bindings, _binding);
-			}
-			else if (type == COMPOUND)
-			{
-				struct String type_name = binding;
-				struct String_Builder instance_name =
-						String_Builder_init(&name_arena,
-						STRUCT_LEN + binding.length);
-
-				instance_name = String_append(instance_name, struct_str);
-				instance_name = String_append(instance_name, binding);
-
-				struct Parametric_Binding _binding = {
-					.parametric = 'A' + i,
-					.type_name = type_name,
-					.type_instance = String_Builder_build(instance_name)
-				};
-
-				Buffer_Parametric_Binding_push(bindings, _binding);
-			}
-			else
-			{
-				struct String type_name = binding;
-				struct String instance_name = binding;
-				struct Parametric_Binding _binding = {
-					.parametric = 'A' + i,
-					.type_name = type_name,
-					.type_instance = instance_name
-				};
-
-				Buffer_Parametric_Binding_push(bindings, _binding);
-			}
+			Buffer_Parametric_Binding_push(bindings, _binding);
 		}
 	}
 

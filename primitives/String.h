@@ -11,8 +11,8 @@ struct Arena
 
 struct String
 {
-	int const length;
-	char const* const str;
+	int length;
+	char const* str;
 };
 
 struct String_Builder
