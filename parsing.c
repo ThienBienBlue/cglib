@@ -6,7 +6,7 @@
 #include "./primitives/Parametric_Binding.h"
 #include "./primitives/Buffer_Parametric_Binding.h"
 
-#include "./codegen.h"
+#include "./primitives/codegen.h"
 #include "./parsing.h"
 
 bool is_whitespace(char c)

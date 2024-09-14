@@ -7,7 +7,7 @@
 #include "../primitives/Buffer_Parametric_Binding.h"
 #include "../Buffer_String.h"
 
-#include "../codegen.h"
+#include "../primitives/codegen.h"
 
 struct Parametric_Binding binding(char c, char* t, char* i)
 {
