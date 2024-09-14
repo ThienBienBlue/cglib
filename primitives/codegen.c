@@ -5,7 +5,7 @@
 #include "../Buffer_String.h"
 
 #include "./codegen.h"
-#include "../parsing.h"
+#include "./parsing.h"
 
 struct String codegen(struct Codegen_Args const args,
 		struct String const template_string)

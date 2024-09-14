@@ -2,11 +2,11 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-#include "./String.h"
-#include "./primitives/Parametric_Binding.h"
-#include "./primitives/Buffer_Parametric_Binding.h"
+#include "../String.h"
+#include "./Parametric_Binding.h"
+#include "./Buffer_Parametric_Binding.h"
 
-#include "./primitives/codegen.h"
+#include "./codegen.h"
 #include "./parsing.h"
 
 bool is_whitespace(char c)
