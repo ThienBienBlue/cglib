@@ -2,7 +2,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-#include "./primitives/String.h"
+#include "./String.h"
 #include "./primitives/Parametric_Binding.h"
 #include "./primitives/Buffer_Parametric_Binding.h"
 

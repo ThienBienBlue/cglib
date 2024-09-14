@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "./primitives/String.h"
+#include "./String.h"
 #include "./primitives/Parametric_Binding.h"
 #include "./primitives/Buffer_String.h"
 #include "./primitives/Buffer_26_String.h"
@@ -55,9 +55,13 @@ static struct String wrap(char const* const str)
 struct String_String type_instance(struct Arena* arena, struct String arg)
 {
 	if (arg.length <= 0)
+	{
 		return (struct String_String) {0};
+	}
 	if (!isalpha(arg.str[0]))
+	{
 		return (struct String_String) {arg, arg};
+	}
 
 	int ptr_offset = 0;
 

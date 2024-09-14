@@ -1,7 +1,7 @@
 #include <assert.h>
 #include <stdlib.h>
 
-#include "../primitives/String.h"
+#include "../String.h"
 
 int main()
 {

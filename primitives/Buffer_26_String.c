@@ -2,7 +2,7 @@
 #include <stddef.h>
 #include <string.h>
 
-#include "../primitives/String.h"
+#include "../String.h"
 #include "./Buffer_26_String.h"
 
 static bool write_to(struct Buffer_26_String* self, int idx, struct String item)

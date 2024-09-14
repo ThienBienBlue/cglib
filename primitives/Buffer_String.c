@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "./String.h"
+#include "../String.h"
 #include "./Buffer_String.h"
 
 struct Buffer_String* Buffer_String_init(int capacity)
