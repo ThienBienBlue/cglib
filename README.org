@@ -1,7 +1,24 @@
-* C Template Codegen
+* C generated library
 
-An attempt to add /templates/ in very loose terms into C. The template files are
-converted into C code during user time with ~codegen~ via string substitution.
+** Additions
+
+*** Primitives
+
+Strings
+
+*** Data Structures
+
+Arena: Simple arena style allocator.
+
+Buffer<T>: Fixed size large continguous memory blob to store instances of T.
+Array<T>: Dymanically sized buffer with bookkeeping to store instances of T.
+FM_Hash_Map<KV>: Fixed Size, Malloc'ed Hash Map of K to V.
+
+** C template code generation
+
+Generates code files from template files as an alternative to #define(ing) the
+data structures. The data structure template files are converted into C code
+during development with ~codegen~ via string substitution.
 
 Sample usage
 #+BEGIN_SRC bash
@@ -9,7 +26,7 @@ Sample usage
   ./codegen -i templates/Hash_Map_KV.h -o generated/Hash_Map_KV.h -K String -V int -include ../String.h
 #+END_SRC
 
-** Arguments
+*** Arguments
 
 #+BEGIN_SRC bash
   ./codegen -i TEMPLATE_FILE -o GENERATED_OUTPUT_FILE -T BINDING [-A..Z OTHER_BINDINGS] [-include INCLUDE1 INCLUDE2...]
@@ -19,7 +36,7 @@ Bindings only exist for ~A..Z~, thus there are only 26 possible bindings at a
 time. A side effect of restricting a binding to one of 26 capital letters is
 that ~<ABC>~ is not ambiguous and can drop the commas.
 
-** Style
+*** Style
 
 By default, adding a comma will translate to one underscore ~_~.
 
@@ -40,7 +57,7 @@ For snake-case:
 For camel-case:
 ~Trio<ABC> == Trio_<A,B,C> == Trio<A,,B   C> == TrioIntStringFloat~
 
-** Sample template file
+*** Sample template file
 
 #+BEGIN_SRC C
   #ifndef LINKED_LIST_<T>_H_
