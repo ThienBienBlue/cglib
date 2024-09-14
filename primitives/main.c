@@ -4,13 +4,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "./String.h"
-#include "./primitives/Parametric_Binding.h"
-#include "./Buffer_String.h"
-#include "./primitives/Buffer_26_String.h"
-#include "./primitives/Buffer_Parametric_Binding.h"
+#include "../String.h"
+#include "./Parametric_Binding.h"
+#include "../Buffer_String.h"
+#include "./Buffer_26_String.h"
+#include "./Buffer_Parametric_Binding.h"
 
-#include "./primitives/codegen.h"
+#include "./codegen.h"
 
 char const* const INCLUDE = "-include";
 char const* const INPUT   = "-i";

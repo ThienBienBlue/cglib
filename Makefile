@@ -3,7 +3,7 @@ CC = gcc
 CFLAGS = -Wall -Wextra
 OLEVEL = -O2
 DEBUG = -g
-FILES = main.c primitives/codegen.h primitives/codegen.c primitives/parsing.h primitives/parsing.c primitives/Buffer_Parametric_Binding.h primitives/Buffer_Parametric_Binding.c Buffer_String.h Buffer_String.c primitives/Buffer_26_String.h primitives/Buffer_26_String.c primitives/Parametric_Binding.h primitives/Parametric_Binding.c String.h String.c
+FILES = primitives/main.c primitives/codegen.h primitives/codegen.c primitives/parsing.h primitives/parsing.c primitives/Buffer_Parametric_Binding.h primitives/Buffer_Parametric_Binding.c Buffer_String.h Buffer_String.c primitives/Buffer_26_String.h primitives/Buffer_26_String.c primitives/Parametric_Binding.h primitives/Parametric_Binding.c String.h String.c
 
 .PHONY: clean tests
 
