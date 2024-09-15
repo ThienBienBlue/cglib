@@ -23,10 +23,10 @@ test_result() {
     fi
 }
 
-./codegen -i templates/Buffer_T.h -o tests/out/Buffer_String.h --snake-case -T String -include ./String.h
-comp_diff=$(diff tests/resources/Buffer_String.h tests/out/Buffer_String.h)
+./codegen -i templates/Buffer_T.h -o tests/out/Buffer_String.h --snake-case -T String
+comp_diff=$(diff Buffer_String.h tests/out/Buffer_String.h)
 test_result Buffer_String.h "$comp_diff"
 
-./codegen -i templates/Buffer_T.c -o tests/out/Buffer_String.c --snake-case -T String -include ./String.h
-comp_diff=$(diff tests/resources/Buffer_String.c tests/out/Buffer_String.c)
+./codegen -i templates/Buffer_T.c -o tests/out/Buffer_String.c --snake-case -T String
+comp_diff=$(diff Buffer_String.c tests/out/Buffer_String.c)
 test_result Buffer_String.c "$comp_diff"

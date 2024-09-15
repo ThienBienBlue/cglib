@@ -2,9 +2,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "./base.h"
 #include "./Buffer_<T>.h"
 
-struct Buffer<T>* Buffer<T>_init(int capacity)
+struct Buffer<T>* Buffer<T>_init(i32 capacity)
 {
 	if (capacity < 0)
 	{
@@ -24,11 +25,11 @@ struct Buffer<T>* Buffer<T>_init(int capacity)
 
 struct Buffer<T>* Buffer<T>_filter(struct Buffer<T>* self, bool (*filter)(T))
 {
-	int capacity = self->capacity;
+	i32 capacity = self->capacity;
 	T* buffer = self->buffer;
 	struct Buffer<T>* retval = Buffer<T>_init(capacity);
 
-	for (int idx = 0; idx < capacity; idx++)
+	for (i32 idx = 0; idx < capacity; idx++)
 	{
 		T item = buffer[idx];
 
@@ -41,7 +42,7 @@ struct Buffer<T>* Buffer<T>_filter(struct Buffer<T>* self, bool (*filter)(T))
 	return retval;
 }
 
-bool Buffer<T>_put(struct Buffer<T>* self, int idx, T item)
+bool Buffer<T>_put(struct Buffer<T>* self, i32 idx, T item)
 {
 	if (self != NULL && idx < self->capacity)
 	{
@@ -86,14 +87,14 @@ bool Buffer<T>_pop(struct Buffer<T>* self)
 	return true;
 }
 
-bool Buffer<T>_swap(struct Buffer<T>* self, int left_idx, int right_idx)
+bool Buffer<T>_swap(struct Buffer<T>* self, i32 left_idx, i32 right_idx)
 {
 	if (self == NULL)
 	{
 		return false;
 	}
 
-	int len = self->length;
+	i32 len = self->length;
 	T* buffer = self->buffer;
 
 	if (left_idx < 0 || len <= left_idx || right_idx < 0 || len <= right_idx)

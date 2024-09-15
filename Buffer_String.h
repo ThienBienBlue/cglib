@@ -2,6 +2,7 @@
  * This file was automatically generated to be a generic Buffer.
  * Buffers are C "arrays" that also bundles the :capacity and :length.
  */
+#include <stdbool.h>
 
 struct Buffer_String
 {

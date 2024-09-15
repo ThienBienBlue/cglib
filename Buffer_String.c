@@ -3,7 +3,6 @@
 #include <string.h>
 
 #include "./base.h"
-#include "./String.h"
 #include "./Buffer_String.h"
 
 struct Buffer_String* Buffer_String_init(i32 capacity)
