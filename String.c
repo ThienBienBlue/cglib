@@ -8,7 +8,7 @@
 struct String EMPTY_STRING = {0};
 struct String_Builder EMPTY_BUILDER = {0};
 
-struct Arena Arena_init(int capacity)
+struct Arena Arena_init(i32 capacity)
 {
 	char* buf = (char*)malloc(capacity);
 
@@ -39,13 +39,13 @@ struct String String_wrap(char const* cstring)
 	};
 }
 
-struct String_Builder String_Builder_init(struct Arena* arena, int capacity)
+struct String_Builder String_Builder_init(struct Arena* arena, i32 capacity)
 {
 	bool fits = 0 < capacity && (arena->offset + capacity <= arena->capacity);
 
 	if (fits || capacity < 0)
 	{
-		int cap = (fits) ? capacity : arena->capacity - arena->offset;
+		i32 cap = (fits) ? capacity : arena->capacity - arena->offset;
 		struct String_Builder retval = {
 			.length = 0,
 			.capacity = cap,

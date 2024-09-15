@@ -6,7 +6,7 @@
 #include "./String.h"
 #include "./Buffer_String.h"
 
-struct Buffer_String* Buffer_String_init(int capacity)
+struct Buffer_String* Buffer_String_init(i32 capacity)
 {
 	if (capacity < 0)
 	{
@@ -26,11 +26,11 @@ struct Buffer_String* Buffer_String_init(int capacity)
 
 struct Buffer_String* Buffer_String_filter(struct Buffer_String* self, bool (*filter)(struct String))
 {
-	int capacity = self->capacity;
+	i32 capacity = self->capacity;
 	struct String* buffer = self->buffer;
 	struct Buffer_String* retval = Buffer_String_init(capacity);
 
-	for (int idx = 0; idx < capacity; idx++)
+	for (i32 idx = 0; idx < capacity; idx++)
 	{
 		struct String item = buffer[idx];
 
@@ -43,7 +43,7 @@ struct Buffer_String* Buffer_String_filter(struct Buffer_String* self, bool (*fi
 	return retval;
 }
 
-bool Buffer_String_put(struct Buffer_String* self, int idx, struct String item)
+bool Buffer_String_put(struct Buffer_String* self, i32 idx, struct String item)
 {
 	if (self != NULL && idx < self->capacity)
 	{
@@ -88,14 +88,14 @@ bool Buffer_String_pop(struct Buffer_String* self)
 	return true;
 }
 
-bool Buffer_String_swap(struct Buffer_String* self, int left_idx, int right_idx)
+bool Buffer_String_swap(struct Buffer_String* self, i32 left_idx, i32 right_idx)
 {
 	if (self == NULL)
 	{
 		return false;
 	}
 
-	int len = self->length;
+	i32 len = self->length;
 	struct String* buffer = self->buffer;
 
 	if (left_idx < 0 || len <= left_idx || right_idx < 0 || len <= right_idx)
