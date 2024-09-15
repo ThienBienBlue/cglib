@@ -2,7 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "String.h"
+#include "./base.h"
+#include "./String.h"
 
 struct String EMPTY_STRING = {0};
 struct String_Builder EMPTY_BUILDER = {0};

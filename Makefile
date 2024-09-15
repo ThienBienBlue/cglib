@@ -3,7 +3,7 @@ CC = gcc
 CFLAGS = -Wall -Wextra
 OLEVEL = -O2
 DEBUG = -g
-FILES = primitives/main.c primitives/codegen.h primitives/codegen.c primitives/parsing.h primitives/parsing.c primitives/Buffer_Parametric_Binding.h primitives/Buffer_Parametric_Binding.c Buffer_String.h Buffer_String.c primitives/Buffer_26_String.h primitives/Buffer_26_String.c primitives/Parametric_Binding.h primitives/Parametric_Binding.c String.h String.c
+FILES = primitives/main.c primitives/codegen.h primitives/codegen.c primitives/parsing.h primitives/parsing.c primitives/Buffer_Parametric_Binding.h primitives/Buffer_Parametric_Binding.c Buffer_String.h Buffer_String.c primitives/Buffer_26_String.h primitives/Buffer_26_String.c primitives/Parametric_Binding.h primitives/Parametric_Binding.c base.h String.h String.c
 
 .PHONY: clean tests
 
@@ -18,15 +18,15 @@ tests: tests/out String_Test parsing_Test codegen_Test end_to_end_Test FM_Hash_M
 tests/out:
 	mkdir tests/out
 
-String_Test: tests/out tests/String_Test.c String.h String.c
+String_Test: tests/out tests/String_Test.c base.h String.h String.c
 	$(CC) $(CFLAGS) $(DEBUG) $$(echo $^ | tr ' ' '\n' | grep '.c$$') -o ./tests/out/$@
 	./tests/out/$@
 
-parsing_Test: tests/out tests/parsing_Test.c primitives/parsing.h primitives/parsing.c String.h String.c primitives/Buffer_Parametric_Binding.h primitives/Buffer_Parametric_Binding.c
+parsing_Test: tests/out tests/parsing_Test.c primitives/parsing.h primitives/parsing.c base.h String.h String.c primitives/Buffer_Parametric_Binding.h primitives/Buffer_Parametric_Binding.c
 	$(CC) $(CFLAGS) $(DEBUG) $$(echo $^ | tr ' ' '\n' | grep '.c$$') -o ./tests/out/$@
 	./tests/out/$@
 
-codegen_Test: tests/out tests/codegen_Test.c primitives/parsing.h primitives/parsing.c primitives/codegen.h primitives/codegen.c primitives/Buffer_Parametric_Binding.h primitives/Buffer_Parametric_Binding.c Buffer_String.c Buffer_String.c primitives/Parametric_Binding.h primitives/Parametric_Binding.c String.h String.c
+codegen_Test: tests/out tests/codegen_Test.c primitives/parsing.h primitives/parsing.c primitives/codegen.h primitives/codegen.c primitives/Buffer_Parametric_Binding.h primitives/Buffer_Parametric_Binding.c Buffer_String.c Buffer_String.c primitives/Parametric_Binding.h primitives/Parametric_Binding.c base.h String.h String.c
 	$(CC) $(CFLAGS) $(DEBUG) $$(echo $^ | tr ' ' '\n' | grep '.c$$') -o ./tests/out/$@
 	./tests/out/$@
 

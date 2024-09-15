@@ -2,26 +2,6 @@
  * Quick String manipulation for short lifetime strings via an Arena.
  */
 
-struct Arena
-{
-	int capacity;
-	int offset;
-	char* bytes;
-};
-
-struct String
-{
-	int length;
-	char const* str;
-};
-
-struct String_Builder
-{
-	int capacity;
-	int length;
-	char* str;
-};
-
 struct Arena Arena_init(int capacity);
 
 struct String String_empty();

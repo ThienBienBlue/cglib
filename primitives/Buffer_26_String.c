@@ -2,6 +2,7 @@
 #include <stddef.h>
 #include <string.h>
 
+#include "../base.h"
 #include "../String.h"
 #include "./Buffer_26_String.h"
 

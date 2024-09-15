@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <stdlib.h>
 
+#include "../base.h"
 #include "../String.h"
 
 int main()

@@ -1,5 +1,6 @@
 #include <stdbool.h>
 
+#include "../base.h"
 #include "../String.h"
 #include "./Parametric_Binding.h"
 #include "../Buffer_String.h"
