@@ -1,18 +1,26 @@
 * C generated library
 
-** Additions
+** Additions to base layer
 
 *** Primitives
 
-Strings
+Strings, String_Builder
 
 *** Data Structures
 
 Arena: Simple arena style allocator.
 
 Buffer<T>: Fixed size large continguous memory blob to store instances of T.
+
 Array<T>: Dymanically sized buffer with bookkeeping to store instances of T.
+
 FM_Hash_Map<KV>: Fixed Size, Malloc'ed Hash Map of K to V.
+
+*** Macros
+
+arraycount: The number of elements in a compile time fixed size array.
+
+max and min.
 
 ** C template code generation
 
