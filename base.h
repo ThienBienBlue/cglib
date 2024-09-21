@@ -31,8 +31,13 @@ struct Arena
 {
 	i32 capacity;
 	i32 offset;
-	char* bytes;
+	void* bytes;
 };
+
+#ifndef __cplusplus
+	#define null NULL
+	#define nullptr NULL
+#endif
 
 #define arraycount(a) (sizeof(a) / sizeof(*(a)))
 

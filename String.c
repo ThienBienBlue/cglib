@@ -12,7 +12,7 @@ struct Arena Arena_init(i32 capacity)
 {
 	char* buf = (char*)malloc(capacity);
 
-	if (buf != NULL)
+	if (buf != null)
 	{
 		return (struct Arena) {
 			.offset = 0,
@@ -70,7 +70,7 @@ struct String_Builder String_append(struct String_Builder s1, struct String s2)
 	{
 		char* copied = memmove(s1.str + s1.length, s2.str, s2.length);
 
-		if (copied != NULL)
+		if (copied != null)
 		{
 			s1.length += s2.length;
 

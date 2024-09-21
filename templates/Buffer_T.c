@@ -46,16 +46,14 @@ bool Buffer<T>_put(struct Buffer<T>* self, i32 idx, T item)
 {
 	if (self != NULL && idx < self->capacity)
 	{
-		// Assignment won't compile if T has const fields.
-		T* write = self->buffer + idx;
-		void* written = memmove(write, &item, sizeof(T));
+		self->buffer[idx] = item;
 
-		if (written != NULL && self->length <= idx)
+		if (self->length <= idx)
 		{
 			self->length = idx + 1;
 		}
 
-		return written != NULL;
+		return true;
 	}
 	else
 	{

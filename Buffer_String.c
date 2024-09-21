@@ -46,16 +46,14 @@ bool Buffer_String_put(struct Buffer_String* self, i32 idx, struct String item)
 {
 	if (self != NULL && idx < self->capacity)
 	{
-		// Assignment won't compile if struct String has const fields.
-		struct String* write = self->buffer + idx;
-		void* written = memmove(write, &item, sizeof(struct String));
+		self->buffer[idx] = item;
 
-		if (written != NULL && self->length <= idx)
+		if (self->length <= idx)
 		{
 			self->length = idx + 1;
 		}
 
-		return written != NULL;
+		return true;
 	}
 	else
 	{

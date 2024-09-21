@@ -11,7 +11,7 @@ struct String String_wrap(char const* cstring);
 
 /// If capacity < 0, String takes up remaining space of arena.
 /// If capacity = 0, return empty String.
-/// If 0 < capacity, return String of capacity of possible, empty otherwise.
+/// If 0 < capacity, return String of capacity if possible, empty otherwise.
 struct String_Builder String_Builder_init(struct Arena* arena, int capacity);
 
 /// Attempts to append all the contents of :s2 into :s1 if it will fit within
