@@ -39,7 +39,9 @@ struct Arena
 	#define nullptr NULL
 #endif
 
+#define UNUSED(arg) (void)(arg)
+
 #define arraycount(a) (sizeof(a) / sizeof(*(a)))
 
-#define min(a, b) ((a) < (b) ? (a) : (b))
-#define max(a, b) ((a) < (b) ? (b) : (a))
+#define min(a, b) (((a) < (b)) ? (a) : (b))
+#define max(a, b) (((a) < (b)) ? (b) : (a))

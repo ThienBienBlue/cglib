@@ -5,19 +5,29 @@
 #include "./base.h"
 #include "./Buffer_String.h"
 
+
 struct Buffer_String* Buffer_String_init(i32 capacity)
 {
-	if (capacity < 0)
-	{
-		capacity = 0;
-	}
+	capacity = max(0, capacity);
 
 	struct Buffer_String* retval = (struct Buffer_String*)malloc(sizeof(struct Buffer_String) + capacity * sizeof(struct String));
 
-	if (retval != NULL)
+	if (retval != null)
 	{
 		retval->capacity = capacity;
 		retval->length = 0;
+	}
+
+	return retval;
+}
+
+struct Buffer_String* Buffer_String_from_ptr(i32 capacity, struct String* ptr)
+{
+	struct Buffer_String* retval = Buffer_String_init(capacity);
+
+	if (retval != null)
+	{
+		memcpy(retval->buffer, ptr, sizeof(struct String) * capacity);
 	}
 
 	return retval;
@@ -44,7 +54,7 @@ struct Buffer_String* Buffer_String_filter(struct Buffer_String* self, bool (*fi
 
 bool Buffer_String_put(struct Buffer_String* self, i32 idx, struct String item)
 {
-	if (self != NULL && idx < self->capacity)
+	if (self != null && idx < self->capacity)
 	{
 		self->buffer[idx] = item;
 
@@ -63,7 +73,7 @@ bool Buffer_String_put(struct Buffer_String* self, i32 idx, struct String item)
 
 bool Buffer_String_push(struct Buffer_String* self, struct String item)
 {
-	if (self != NULL)
+	if (self != null)
 	{
 		return Buffer_String_put(self, self->length, item);
 	}
@@ -75,7 +85,7 @@ bool Buffer_String_push(struct Buffer_String* self, struct String item)
 
 bool Buffer_String_pop(struct Buffer_String* self)
 {
-	if (self == NULL || self->length <= 0)
+	if (self == null || self->length <= 0)
 	{
 		return false;
 	}
@@ -87,7 +97,7 @@ bool Buffer_String_pop(struct Buffer_String* self)
 
 bool Buffer_String_swap(struct Buffer_String* self, i32 left_idx, i32 right_idx)
 {
-	if (self == NULL)
+	if (self == null)
 	{
 		return false;
 	}

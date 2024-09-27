@@ -1,8 +1,12 @@
 /**
- * This file was automatically generated to be a generic Buffer.
- * Buffers are C "arrays" that also bundles the :capacity and :length.
+ * Buffers are C-arrays that bundle the :capacity and :length.
+ * All memory is owned by the buffer. Freeing memory is freeing the buffer.
+ *
+ * #include
+ * - stdbool.h
+ * - base.h
  */
-#include <stdbool.h>
+
 
 struct Buffer_String
 {
@@ -12,6 +16,10 @@ struct Buffer_String
 };
 
 struct Buffer_String* Buffer_String_init(i32 capacity);
+
+struct Buffer_String* Buffer_String_from_ptr(i32 capacity, struct String* ptr);
+
+#define Buffer_String_from_carray(a) Buffer_String_from_ptr(arraycount(a), (a))
 
 struct Buffer_String* Buffer_String_filter(struct Buffer_String* self, bool (*filter)(struct String));
 

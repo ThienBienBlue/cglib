@@ -1,3 +1,11 @@
+/**
+ * Fixed Size Malloc Hash Map implemented with robin hood linear probing and
+ * backshift.
+ *
+ * #include
+ * - stdbool.h
+ */
+
 struct FM_Hash_Map<KV>
 {
 	K* keys;

@@ -41,7 +41,7 @@ static int matching_offset(struct FM_Hash_Map<KV>* self, K target, int start)
 		{
 			return -1;
 		}
-		else if (eq(target, key))
+		else if (offset == disp && eq(target, key))
 		{
 			return offset;
 		}
@@ -155,7 +155,7 @@ bool FM_Hash_Map<KV>_put(struct FM_Hash_Map<KV>* self, K k, V v)
 				kd = disp;
 			}
 		}
-		else if (eq(key, k))
+		else if (kd == disp && eq(key, k))
 		{
 			values[i] = v;
 

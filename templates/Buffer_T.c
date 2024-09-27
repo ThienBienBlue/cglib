@@ -5,19 +5,29 @@
 #include "./base.h"
 #include "./Buffer_<T>.h"
 
+
 struct Buffer<T>* Buffer<T>_init(i32 capacity)
 {
-	if (capacity < 0)
-	{
-		capacity = 0;
-	}
+	capacity = max(0, capacity);
 
 	struct Buffer<T>* retval = (struct Buffer<T>*)malloc(sizeof(struct Buffer<T>) + capacity * sizeof(T));
 
-	if (retval != NULL)
+	if (retval != null)
 	{
 		retval->capacity = capacity;
 		retval->length = 0;
+	}
+
+	return retval;
+}
+
+struct Buffer<T>* Buffer<T>_from_ptr(i32 capacity, T* ptr)
+{
+	struct Buffer<T>* retval = Buffer<T>_init(capacity);
+
+	if (retval != null)
+	{
+		memcpy(retval->buffer, ptr, sizeof(T) * capacity);
 	}
 
 	return retval;
@@ -44,7 +54,7 @@ struct Buffer<T>* Buffer<T>_filter(struct Buffer<T>* self, bool (*filter)(T))
 
 bool Buffer<T>_put(struct Buffer<T>* self, i32 idx, T item)
 {
-	if (self != NULL && idx < self->capacity)
+	if (self != null && idx < self->capacity)
 	{
 		self->buffer[idx] = item;
 
@@ -63,7 +73,7 @@ bool Buffer<T>_put(struct Buffer<T>* self, i32 idx, T item)
 
 bool Buffer<T>_push(struct Buffer<T>* self, T item)
 {
-	if (self != NULL)
+	if (self != null)
 	{
 		return Buffer<T>_put(self, self->length, item);
 	}
@@ -75,7 +85,7 @@ bool Buffer<T>_push(struct Buffer<T>* self, T item)
 
 bool Buffer<T>_pop(struct Buffer<T>* self)
 {
-	if (self == NULL || self->length <= 0)
+	if (self == null || self->length <= 0)
 	{
 		return false;
 	}
@@ -87,7 +97,7 @@ bool Buffer<T>_pop(struct Buffer<T>* self)
 
 bool Buffer<T>_swap(struct Buffer<T>* self, i32 left_idx, i32 right_idx)
 {
-	if (self == NULL)
+	if (self == null)
 	{
 		return false;
 	}
