@@ -28,6 +28,7 @@ struct Buffer_String* Buffer_String_from_ptr(i32 capacity, struct String* ptr)
 	if (retval != null)
 	{
 		memcpy(retval->buffer, ptr, sizeof(struct String) * capacity);
+		retval->length = capacity;
 	}
 
 	return retval;

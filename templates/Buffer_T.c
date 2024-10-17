@@ -28,6 +28,7 @@ struct Buffer<T>* Buffer<T>_from_ptr(i32 capacity, T* ptr)
 	if (retval != null)
 	{
 		memcpy(retval->buffer, ptr, sizeof(T) * capacity);
+		retval->length = capacity;
 	}
 
 	return retval;
