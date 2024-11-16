@@ -108,3 +108,25 @@ struct String String_Builder_build(struct String_Builder s)
 		.str = s.str
 	};
 }
+
+bool String_eq(struct String const left, struct String const right)
+{
+	if (left.length != right.length)
+	{
+		return false;
+	}
+
+	i32 l, r;
+	char const* lstr = left.str;
+	char const* rstr = right.str;
+
+	for (l = 0, r = 0; l < left.length && lstr[l] == rstr[r]; l++, r++)
+	{}
+
+	return l == left.length;
+}
+
+bool String_ceq(struct String const left, char const* right)
+{
+	return String_eq(left, String_wrap(right));
+}

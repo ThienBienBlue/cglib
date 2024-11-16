@@ -13,7 +13,7 @@ clean:
 	rm tests/out/*
 	rm codegen
 
-tests: tests/out String_Test parsing_Test codegen_Test end_to_end_Test FM_Hash_Map_Int_Float_Test
+tests: tests/out String_Test parsing_Test codegen_Test argparse_Test end_to_end_Test FM_Hash_Map_Int_Float_Test
 
 tests/out:
 	mkdir tests/out
@@ -27,6 +27,10 @@ parsing_Test: tests/out tests/parsing_Test.c primitives/parsing.h primitives/par
 	./tests/out/$@
 
 codegen_Test: tests/out tests/codegen_Test.c primitives/parsing.h primitives/parsing.c primitives/codegen.h primitives/codegen.c primitives/Buffer_Parametric_Binding.h primitives/Buffer_Parametric_Binding.c Buffer_String.c Buffer_String.c primitives/Parametric_Binding.h primitives/Parametric_Binding.c base.h String.h String.c
+	$(CC) $(CFLAGS) $(DEBUG) $$(echo $^ | tr ' ' '\n' | grep '.c$$') -o ./tests/out/$@
+	./tests/out/$@
+
+argparse_Test: tests/out tests/argparse_Test.c base.h String.h String.c Buffer_String.h Buffer_String.c argparse.h argparse.c
 	$(CC) $(CFLAGS) $(DEBUG) $$(echo $^ | tr ' ' '\n' | grep '.c$$') -o ./tests/out/$@
 	./tests/out/$@
 
