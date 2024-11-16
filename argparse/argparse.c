@@ -1,5 +1,5 @@
-#include "base.h"
-#include "Buffer_String.h"
+#include "../base.h"
+#include "../buffer_string/Buffer_String.h"
 
 #include "argparse.h"
 
@@ -32,23 +32,27 @@ struct Buffer_String* shell_lite_split(struct String const args)
 		}
 
 		// Found a word we should return.
-		char stop1 = 0;
-		char stop2 = 0;
-		char stop3 = 0;
+		char stops[5] = {0};
+		i32 stops_len = 0;
 
 		if (c == QUOTE1)
 		{
-			stop1 = QUOTE1;
+			stops[0] = QUOTE1;
+			stops_len = 1;
 		}
 		else if (c == QUOTE2)
 		{
-			stop1 = QUOTE2;
+			stops[0] = QUOTE2;
+			stops_len = 1;
 		}
 		else
 		{
-			stop1 = WHITESPACE1;
-			stop2 = WHITESPACE2;
-			stop3 = WHITESPACE3;
+			stops[0] = WHITESPACE1;
+			stops[1] = WHITESPACE2;
+			stops[2] = WHITESPACE3;
+			stops[3] = QUOTE1;
+			stops[4] = QUOTE2;
+			stops_len = 5;
 		}
 
 		// Advance :j to the first character that ends this word.
@@ -57,8 +61,21 @@ struct Buffer_String* shell_lite_split(struct String const args)
 		{
 			char jc = args.str[j];
 
-			if (jc == NULL_BYTE || (stop1 && jc == stop1)
-					|| (stop2 && jc == stop2) || (stop3 && jc == stop3))
+			if (jc == NULL_BYTE)
+			{
+				break;
+			}
+
+			i32 stops_i;
+			for (stops_i = 0; stops_i < stops_len; stops_i++)
+			{
+				if (jc == stops[stops_i])
+				{
+					break;
+				}
+			}
+
+			if (stops_i < stops_len)
 			{
 				break;
 			}
@@ -88,23 +105,27 @@ struct Buffer_String* shell_lite_split(struct String const args)
 		}
 
 		// Found a word we should record.
-		char stop1 = 0;
-		char stop2 = 0;
-		char stop3 = 0;
+		char stops[5] = {0};
+		i32 stops_len = 0;
 
 		if (c == QUOTE1)
 		{
-			stop1 = QUOTE1;
+			stops[0] = QUOTE1;
+			stops_len = 1;
 		}
 		else if (c == QUOTE2)
 		{
-			stop1 = QUOTE2;
+			stops[0] = QUOTE2;
+			stops_len = 1;
 		}
 		else
 		{
-			stop1 = WHITESPACE1;
-			stop2 = WHITESPACE2;
-			stop3 = WHITESPACE3;
+			stops[0] = WHITESPACE1;
+			stops[1] = WHITESPACE2;
+			stops[2] = WHITESPACE3;
+			stops[3] = QUOTE1;
+			stops[4] = QUOTE2;
+			stops_len = 5;
 		}
 
 		// Advance :j to the first character that ends this word.
@@ -113,8 +134,21 @@ struct Buffer_String* shell_lite_split(struct String const args)
 		{
 			char jc = args.str[j];
 
-			if (jc == NULL_BYTE || (stop1 && jc == stop1)
-					|| (stop2 && jc == stop2) || (stop3 && jc == stop3))
+			if (jc == NULL_BYTE)
+			{
+				break;
+			}
+
+			i32 stops_i;
+			for (stops_i = 0; stops_i < stops_len; stops_i++)
+			{
+				if (jc == stops[stops_i])
+				{
+					break;
+				}
+			}
+
+			if (stops_i < stops_len)
 			{
 				break;
 			}

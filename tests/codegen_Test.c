@@ -6,7 +6,7 @@
 #include "../String.h"
 #include "../primitives/Parametric_Binding.h"
 #include "../primitives/Buffer_Parametric_Binding.h"
-#include "../Buffer_String.h"
+#include "../buffer_string/Buffer_String.h"
 
 #include "../primitives/codegen.h"
 
