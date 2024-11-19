@@ -14,4 +14,4 @@
 /// - "'''' 'foo" -> ["", "", "foo"]
 /// Deviations prevent the need for additional mallocs.
 /// E.g. foo'bar' is interpreted as foobar in shell.
-struct Buffer_String* shell_lite_split(struct String const args);
+struct Buffer_String* Buffer_String_shell_lite_split(struct String const args);

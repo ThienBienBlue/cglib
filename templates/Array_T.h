@@ -1,28 +1,26 @@
-#ifndef ARRAY<T>_H_
-#define ARRAY<T>_H_
-
 /**
  * Generated code for a generic Array. Arrays dynamically resize themselves as needed.
+ *
+ * #include
+ * - base.h
  */
-#include <stdbool.h>
+
 
 struct Array<T>
 {
-	int capacity;
-	int length;
+	i32 capacity;
+	i32 length;
 	T* array;
 };
 
-struct Array<T>* Array<T>_init(int capacity);
+struct Array<T>* Array<T>_init(i32 capacity);
+
+struct Array<T> Array<T>_sinit(i32 capacity);
 
 void Array<T>_free(struct Array<T>* self);
 
+void Array<T>_sfree(struct Array<T> self);
+
 bool Array<T>_push(struct Array<T>* self, T item);
 
-bool Array<T>_concat(struct Array<T>* self, struct Array<T>* with);
-
-bool Array<T>_pop_many(struct Array<T>* self, int how_many);
-
 bool Array<T>_pop(struct Array<T>* self);
-
-#endif

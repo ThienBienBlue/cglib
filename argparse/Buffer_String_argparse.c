@@ -1,7 +1,8 @@
 #include "../base.h"
 #include "../buffer_string/Buffer_String.h"
 
-#include "argparse.h"
+#include "Buffer_String_argparse.h"
+
 
 static char const NULL_BYTE = 0;
 
@@ -12,7 +13,7 @@ static char const WHITESPACE3 = '\n';
 static char const QUOTE1 = '\'';
 static char const QUOTE2 = '"';
 
-struct Buffer_String* shell_lite_split(struct String const args)
+struct Buffer_String* Buffer_String_shell_lite_split(struct String const args)
 {
 	i32 args_begin = args.length;
 	i32 args_count = 0;

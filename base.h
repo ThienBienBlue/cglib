@@ -36,6 +36,7 @@ struct Arena
 };
 
 #ifndef __cplusplus
+	#include <stddef.h>
 	#define null NULL
 	#define nullptr NULL
 #endif
@@ -43,6 +44,10 @@ struct Arena
 #define UNUSED(arg) (void)(arg)
 
 #define arraycount(a) (sizeof(a) / sizeof(*(a)))
+#define mstrlen(str) (sizeof(str) - 1)  // -1 to account for zero terminator.
 
 #define min(a, b) (((a) < (b)) ? (a) : (b))
 #define max(a, b) (((a) < (b)) ? (b) : (a))
+
+u32 mmod(i32 a, u32 n);  // Standard mathematical Least Positive Residue.
+i32 dkmod(i32 a, i32 n);  // Donald Knuth definition where n dictates sign.

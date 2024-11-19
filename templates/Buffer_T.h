@@ -1,9 +1,9 @@
 /**
  * Buffers are C-arrays that bundle the :capacity and :length.
- * All memory is owned by the buffer. Freeing memory is freeing the buffer.
+ * All memory is owned by the buffer is contiguous. Freeing the buffer frees
+ * all memory owned by the buffer.
  *
  * #include
- * - stdbool.h
  * - base.h
  */
 
