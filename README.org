@@ -12,13 +12,17 @@ Arena: Simple arena style allocator.
 
 Buffer<T>: Fixed size large continguous memory blob to store instances of T.
 
-Array<T>: Dymanically sized buffer with bookkeeping to store instances of T.
+Array<T>: Dynamically sized buffer with bookkeeping to store instances of T.
 
 FM_Hash_Map<KV>: Fixed Size, Malloc'ed Hash Map of K to V.
 
 *** Macros
 
+NULL: ~null~ and ~nullptr~
+
 arraycount: The number of elements in a compile time fixed size array.
+
+mstrlen: M(acro) strlen.
 
 max and min.
 
