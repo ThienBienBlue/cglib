@@ -1,8 +1,8 @@
 #include <assert.h>
 
 #include "../base.h"
-#include "../argparse/argparse.h"
 #include "../buffer_string/Buffer_String.h"
+#include "../argparse/Buffer_String_argparse.h"
 #include "../String.h"
 
 int main()
@@ -10,7 +10,7 @@ int main()
 	// Basic functionality test.
 	{
 		struct String test = String_wrap("foo bar baz");
-		struct Buffer_String* val = shell_lite_split(test);
+		struct Buffer_String* val = Buffer_String_shell_lite_split(test);
 
 		assert(val->length == 3
 				&& "Expect \"foo bar baz\" to be parsed into 3 Strings!");
@@ -27,7 +27,7 @@ int main()
 	// Test combinations of whitespaces.
 	{
 		struct String test = String_wrap("fool\n\nbarrel  \tbazzite");
-		struct Buffer_String* val = shell_lite_split(test);
+		struct Buffer_String* val = Buffer_String_shell_lite_split(test);
 
 		assert(val->length == 3
 				&& "Expect \"fool\n\nbarrel  \tbazzite\" to be parsed into 3 Strings!");
@@ -44,7 +44,7 @@ int main()
 	// Test the usage of quotes.
 	{
 		struct String test = String_wrap("'foo bar' baz");
-		struct Buffer_String* val = shell_lite_split(test);
+		struct Buffer_String* val = Buffer_String_shell_lite_split(test);
 
 		assert(val->length == 2
 				&& "Expect \"'foo bar' baz to be parsed into 2 Strings!");
@@ -59,7 +59,7 @@ int main()
 	// Deviations from shell parsing starts here.
 	{
 		struct String test = String_wrap("'''' '' 'foo");
-		struct Buffer_String* val = shell_lite_split(test);
+		struct Buffer_String* val = Buffer_String_shell_lite_split(test);
 
 		assert(val->length == 4
 				&& "Expect \"'''' '' 'foo\" to be parsed into 4 Strings!");
@@ -77,7 +77,7 @@ int main()
 
 	{
 		struct String test = String_wrap("'foo''bar' 'baz'");
-		struct Buffer_String* val = shell_lite_split(test);
+		struct Buffer_String* val = Buffer_String_shell_lite_split(test);
 
 		assert(val->length == 3
 				&& "Expect \"'foo''bar' 'baz'\" to be parsed into 3 Strings!");
@@ -93,7 +93,7 @@ int main()
 
 	{
 		struct String test = String_wrap("foo'bar' \n'\t\tba\nz\n'");
-		struct Buffer_String* val = shell_lite_split(test);
+		struct Buffer_String* val = Buffer_String_shell_lite_split(test);
 
 		assert(val->length == 3
 				&& "Expect \"foo'bar' \n'\t\tba\nz\n'\" to be parsed into 3 Strings!");
