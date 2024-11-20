@@ -3,23 +3,23 @@
  * backshift.
  *
  * #include
- * - stdbool.h
+ * - base.h
  */
 
 struct FM_Hash_Map<KV>
 {
 	K* keys;
 	V* values;
-	int* rh_displacements;
+	i32* rh_displacements;
 
-	int capacity;
-	int length;
+	i32 capacity;
+	i32 length;
 
-	int (*hash)(K);
+	i32 (*hash)(K);
 	bool (*eq)(K, K);
 };
 
-struct FM_Hash_Map<KV> FM_Hash_Map<KV>_init(int capacity, int (*hash)(K),
+struct FM_Hash_Map<KV> FM_Hash_Map<KV>_sinit(i32 capacity, i32 (*hash)(K),
 		bool (*eq)(K, K));
 
 V FM_Hash_Map<KV>_get(struct FM_Hash_Map<KV>* self, K k, V fallback);

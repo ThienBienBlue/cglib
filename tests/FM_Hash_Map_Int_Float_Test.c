@@ -1,9 +1,10 @@
 #include <assert.h>
 #include <stdbool.h>
 
+#include "../base.h"
 #include "../generated/FM_Hash_Map_Int_Float.h"
 
-int hash(int i)
+i32 hash(int i)
 {
 	return i % 20;
 }
@@ -13,14 +14,14 @@ bool eq(int a, int b)
 	return a == b;
 }
 
-void assert_ikvd(struct FM_Hash_Map_Int_Float map, int idx, int k, float v, int d)
+void assert_ikvd(struct FM_Hash_Map_Int_Float map, i32 idx, int k, float v, i32 d)
 {
 	assert(map.keys[idx] == k);
 	assert(map.values[idx] == v);
 	assert(map.rh_displacements[idx] == d);
 }
 
-void assert_get(struct FM_Hash_Map_Int_Float map, int k, int v)
+void assert_get(struct FM_Hash_Map_Int_Float map, int k, i32 v)
 {
 	assert(FM_Hash_Map_Int_Float_get(&map, k, -1.0) == v);
 }
@@ -32,7 +33,7 @@ void assert_remove(struct FM_Hash_Map_Int_Float* map, int k, bool success)
 
 int main()
 {
-	struct FM_Hash_Map_Int_Float map = FM_Hash_Map_Int_Float_init(10, hash, eq);
+	struct FM_Hash_Map_Int_Float map = FM_Hash_Map_Int_Float_sinit(10, hash, eq);
 
 	assert(FM_Hash_Map_Int_Float_put(&map, 5, 5.0));
 	assert(FM_Hash_Map_Int_Float_put(&map, 15, 15.0));
@@ -122,7 +123,7 @@ int main()
 	assert(map.rh_displacements[7] == -1);
 
 	// Edge case of Map with space for a single element.
-	struct FM_Hash_Map_Int_Float single = FM_Hash_Map_Int_Float_init(1, hash, eq);
+	struct FM_Hash_Map_Int_Float single = FM_Hash_Map_Int_Float_sinit(1, hash, eq);
 
 	assert(FM_Hash_Map_Int_Float_put(&single, 25519, 25519.0));
 	assert(FM_Hash_Map_Int_Float_put(&single, 3628800, 10.0) == false);
@@ -134,7 +135,7 @@ int main()
 	assert_get(single, 3628800, 10.0);
 
 	// Test wrap around.
-	struct FM_Hash_Map_Int_Float wrap = FM_Hash_Map_Int_Float_init(2, hash, eq);
+	struct FM_Hash_Map_Int_Float wrap = FM_Hash_Map_Int_Float_sinit(2, hash, eq);
 	assert(FM_Hash_Map_Int_Float_put(&wrap, 11, 11.0));
 	assert(FM_Hash_Map_Int_Float_put(&wrap, 21, 21.0));
 	assert(FM_Hash_Map_Int_Float_put(&wrap, 31, 31.0) == false);

@@ -1,15 +1,14 @@
-#include <stdbool.h>
-#include <stddef.h>
 #include <stdlib.h>
 
+#include "../base.h"
 #include "FM_Hash_Map<KV>.h"
 
-static int coerce_idx(int idx, int capacity)
+static i32 coerce_idx(i32 idx, i32 capacity)
 {
 	if (0 < capacity)
 	{
-		int negative_allowed = idx % capacity;
-		int as_positive = negative_allowed + capacity;
+		i32 negative_allowed = idx % capacity;
+		i32 as_positive = negative_allowed + capacity;
 		return as_positive % capacity;
 	}
 	else
@@ -18,10 +17,10 @@ static int coerce_idx(int idx, int capacity)
 	}
 }
 
-static int matching_offset(struct FM_Hash_Map<KV>* self, K target, int start)
+static i32 matching_offset(struct FM_Hash_Map<KV>* self, K target, i32 start)
 {
-	int capacity = self->capacity;
-	int* displacements = self->rh_displacements;
+	i32 capacity = self->capacity;
+	i32* displacements = self->rh_displacements;
 	K* keys = self->keys;
 	bool (*eq)(K, K) = self->eq;
 
@@ -31,10 +30,10 @@ static int matching_offset(struct FM_Hash_Map<KV>* self, K target, int start)
 	}
 
 	// Find the true idx (:idx + :offset) where k lives;
-	for (int offset = 0; offset < capacity; offset++)
+	for (i32 offset = 0; offset < capacity; offset++)
 	{
-		int i = (start + offset) % capacity;
-		int disp = displacements[i];
+		i32 i = (start + offset) % capacity;
+		i32 disp = displacements[i];
 		K key = keys[i];
 
 		if (disp < offset)
@@ -50,7 +49,7 @@ static int matching_offset(struct FM_Hash_Map<KV>* self, K target, int start)
 	return -1;
 }
 
-struct FM_Hash_Map<KV> FM_Hash_Map<KV>_init(int capacity, int (*hash)(K),
+struct FM_Hash_Map<KV> FM_Hash_Map<KV>_sinit(i32 capacity, i32 (*hash)(K),
 		bool (*eq)(K, K))
 {
 	if (capacity <= 0)
@@ -60,9 +59,9 @@ struct FM_Hash_Map<KV> FM_Hash_Map<KV>_init(int capacity, int (*hash)(K),
 
 	K* keys = (K*)calloc(capacity, sizeof(K));
 	V* values = (V*)calloc(capacity, sizeof(V));
-	int* rh_disp = (int*)calloc(capacity, sizeof(int));
+	i32* rh_disp = (i32*)calloc(capacity, sizeof(i32));
 
-	for (int i = 0; i < capacity; i++)
+	for (i32 i = 0; i < capacity; i++)
 	{
 		rh_disp[i] = -1;
 	}
@@ -94,8 +93,8 @@ V FM_Hash_Map<KV>_get(struct FM_Hash_Map<KV>* self, K k, V fallback)
 
 V* FM_Hash_Map<KV>_get_ref(struct FM_Hash_Map<KV>* self, K k)
 {
-	int idx = coerce_idx(self->hash(k), self->capacity);
-	int offset = matching_offset(self, k, idx);
+	i32 idx = coerce_idx(self->hash(k), self->capacity);
+	i32 offset = matching_offset(self, k, idx);
 
 	if (offset < 0)
 	{
@@ -109,27 +108,27 @@ bool FM_Hash_Map<KV>_put(struct FM_Hash_Map<KV>* self, K k, V v)
 {
 	K* keys = self->keys;
 	V* values = self->values;
-	int* displacements = self->rh_displacements;
-	int capacity = self->capacity;
-	int length = self->length;
+	i32* displacements = self->rh_displacements;
+	i32 capacity = self->capacity;
+	i32 length = self->length;
 	bool (*eq)(K, K) = self->eq;
 
-	int idx = coerce_idx(self->hash(k), self->capacity);
+	i32 idx = coerce_idx(self->hash(k), self->capacity);
 
 	if (idx < 0)
 	{
 		return false;
 	}
 
-	int offset = 0;
-	int kd = 0;
+	i32 offset = 0;
+	i32 kd = 0;
 
 	for (; offset < capacity; offset++)
 	{
-		int i = (idx + offset) % capacity;
+		i32 i = (idx + offset) % capacity;
 		K key = keys[i];
 		V value = values[i];
-		int disp = displacements[i];
+		i32 disp = displacements[i];
 
 		if (disp < kd)
 		{
@@ -172,11 +171,11 @@ bool FM_Hash_Map<KV>_remove(struct FM_Hash_Map<KV>* self, K k)
 {
 	K* keys = self->keys;
 	V* values = self->values;
-	int* displacements = self->rh_displacements;
-	int capacity = self->capacity;
+	i32* displacements = self->rh_displacements;
+	i32 capacity = self->capacity;
 
-	int idx = coerce_idx(self->hash(k), capacity);
-	int offset = matching_offset(self, k, idx);
+	i32 idx = coerce_idx(self->hash(k), capacity);
+	i32 offset = matching_offset(self, k, idx);
 
 	if (0 <= offset)
 	{
@@ -189,9 +188,9 @@ bool FM_Hash_Map<KV>_remove(struct FM_Hash_Map<KV>* self, K k)
 
 	for (; offset + 1 < capacity; offset++)
 	{
-		int i_shift = (idx + offset) % capacity;
-		int i_with = (idx + offset + 1) % capacity;
-		int disp_with = displacements[i_with];
+		i32 i_shift = (idx + offset) % capacity;
+		i32 i_with = (idx + offset + 1) % capacity;
+		i32 disp_with = displacements[i_with];
 
 		if (disp_with <= 0)
 		{
