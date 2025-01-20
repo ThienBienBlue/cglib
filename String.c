@@ -8,7 +8,7 @@
 
 struct String_Builder String_Builder_init(struct Arena* arena, i32 capacity)
 {
-	struct Arena_Alloc buffer = Arena_pack(arena, capacity);
+	struct Arena_Alloc buffer = Arena_align(arena, char, capacity);
 
 	if (!iszero(buffer))
 	{

@@ -25,14 +25,11 @@ struct Arena Arena_free_all(struct Arena const self)
 	return (struct Arena){ self.capacity, 1, self.bytes };
 }
 
-struct Arena_Alloc Arena_alloc(struct Arena* self, i32 size)
+struct Arena_Alloc Arena_malloc(struct Arena* self, u32 alignment, i32 size)
 {
 	// Ensure proper pointer alignment.
 	uintptr_t offset = (uintptr_t)(self->bytes + self->offset);
-	u32 alignment = (0 < (offset & (DEFAULT_ALIGNMENT - 1)))
-			? (offset & (DEFAULT_ALIGNMENT - 1))
-			: 0;
-	uintptr_t aligned_offset = offset + alignment;
+	uintptr_t aligned_offset = (offset + alignment - 1) & (~(alignment - 1));
 	u32 _aligned_offset = aligned_offset - (uintptr_t)self->bytes;
 
 	if (size < 0)
@@ -40,7 +37,7 @@ struct Arena_Alloc Arena_alloc(struct Arena* self, i32 size)
 		u32 alloc_capacity = self->capacity - _aligned_offset;
 
 		self->offset = self->capacity;
-		bzero(self->bytes + offset, alloc_capacity);
+		bzero(self->bytes + _aligned_offset, alloc_capacity);
 
 		return (struct Arena_Alloc){ alloc_capacity, _aligned_offset };
 	}
@@ -57,29 +54,12 @@ struct Arena_Alloc Arena_alloc(struct Arena* self, i32 size)
 	}
 }
 
+struct Arena_Alloc Arena_alloc(struct Arena* self, i32 size)
+{
+	return Arena_malloc(self, DEFAULT_ALIGNMENT, size);
+}
+
 struct Arena_Alloc Arena_pack(struct Arena* self, i32 size)
 {
-	if (size < 0)
-	{
-		u32 capacity = self->capacity - self->offset;
-		u32 offset = self->offset;
-
-		self->offset = self->capacity;
-		bzero(self->bytes + offset, capacity);
-
-		return (struct Arena_Alloc){ capacity, offset };
-	}
-	if (self->offset + size <= self->capacity)
-	{
-		u32 offset = self->offset;
-
-		self->offset += size;
-		bzero(self->bytes + offset, size);
-
-		return (struct Arena_Alloc){ size, offset };
-	}
-	else
-	{
-		return (struct Arena_Alloc){ 0 };
-	}
+	return Arena_malloc(self, 1, size);
 }

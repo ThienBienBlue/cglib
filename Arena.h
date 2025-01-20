@@ -17,7 +17,7 @@ struct Arena_Alloc
 	u32 offset;
 };
 
-static u32 const DEFAULT_ALIGNMENT = 2 * sizeof(void*);
+static u32 const DEFAULT_ALIGNMENT = sizeof(void*);
 
 /// Initializes an arena with :capacity.
 struct Arena Arena_init(u32 capacity);
@@ -27,16 +27,19 @@ struct Arena Arena_wrap(u32 capacity, void* bytes);
 /// Frees all memory in the arena.
 struct Arena Arena_free_all(struct Arena const self);
 
-/// Allocates :size from :bytes with alignment as needed.
-/// If :size < 0 then allocate the remaining space in the arena.
-/// See also `Arena_pack'.
+/// Plumbing API for allocating on an arena. Allocated bytes are always zeroed.
 ///
-/// :returns <0 representing the offset into :bytes or 0 if no allocation.
+/// :self can never be null.
+/// :alignment power of 2 that is caller's responsibility to obtain correctly.
+/// :size amount of bytes to allocate. -1 means reserve all remaining space.
+/// :return handle to :self with amount of space reserved.
+struct Arena_Alloc Arena_malloc(struct Arena* self, u32 alignment, i32 size);
+
+/// Prefered API for allocating on :arena. Uses `alignof' for :alignment.
+#define Arena_align(arena, type, count) Arena_malloc((arena), alignof(type), (count) * sizeof(type));
+
+/// Calls `Arena_malloc' with DEFAULT_ALIGNMENT.
 struct Arena_Alloc Arena_alloc(struct Arena* self, i32 size);
 
-/// Allocates :size from :bytes with no alignment.
-/// If :size < 0 then allocate the remaining space in the arena.
-/// See also `Arena_alloc'.
-///
-/// :returns <0 representing the offset into :bytes or 0 if no allocation.
+/// Calls `Arena_malloc' with 1 alignment to achieve packing.
 struct Arena_Alloc Arena_pack(struct Arena* self, i32 size);
