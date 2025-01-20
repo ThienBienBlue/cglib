@@ -179,7 +179,7 @@ int main(int argc, char* argv[])
 		Buffer_String_push(includes, wrap(include));
 	}
 
-	struct Arena name_arena = Arena_init(struct_instance);
+	struct Arena binding_arena = Arena_init(struct_instance);
 	struct Buffer_Parametric_Binding* bindings =
 			Buffer_Parametric_Binding_init(num_bindings);
 
@@ -191,7 +191,7 @@ int main(int argc, char* argv[])
 
 		if (0 < binding.length)
 		{
-			struct Name_Instance binding_parsed = type_instance(&name_arena,
+			struct Name_Instance binding_parsed = type_instance(&binding_arena,
 					binding);
 			struct Parametric_Binding _binding = {
 				.parametric = 'A' + i,

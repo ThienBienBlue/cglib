@@ -4,9 +4,20 @@ CFLAGS = -Wall -Wextra
 OLEVEL = -O2
 DEBUG = -g
 CASE = --snake-case
+
+# Modules.
 BASE = base.h base.c Arena.h Arena.c String.h String.c
+PARSING = primitives/parsing.h primitives/parsing.c
+BUFFER_T = templates/Buffer_T.h templates/Buffer_T.c
+ARRAY_T = templates/Array_T.h templates/Array_T.c
+BUFFER_STRING = buffer_string/Buffer_String.h buffer_string/Buffer_String.c
+BUFFER_STRING_ARGPARSE = argparse/Buffer_String_argparse.h argparse/Buffer_String_argparse.c
+CODEGEN = primitives/codegen.h primitives/codegen.c
+PARAMETRIC_BINDING = primitives/Parametric_Binding.h primitives/Parametric_Binding.c
+BUFFER_PARAMETRIC_BINDING = primitives/Buffer_Parametric_Binding.h primitives/Buffer_Parametric_Binding.c
+
 PRIMITIVES = primitives/*
-FILES = $(PRIMITIVES) $(BASE) buffer_string/Buffer_String.h buffer_string/Buffer_String.c
+FILES = $(PRIMITIVES) $(BASE) $(BUFFER_STRING)
 
 .PHONY: clean tests buffer_string array_string
 
@@ -25,15 +36,15 @@ String_Test: tests/out tests/String_Test.c $(BASE)
 	$(CC) $(CFLAGS) $(DEBUG) $$(echo $^ | tr ' ' '\n' | grep '.c$$') -o ./tests/out/$@
 	./tests/out/$@
 
-parsing_Test: tests/out tests/parsing_Test.c $(BASE) primitives/parsing.h primitives/parsing.c primitives/Buffer_Parametric_Binding.h primitives/Buffer_Parametric_Binding.c
+parsing_Test: tests/out tests/parsing_Test.c $(BASE) $(PARSING) $(PARAMETRIC_BINDING) $(BUFFER_PARAMETRIC_BINDING)
 	$(CC) $(CFLAGS) $(DEBUG) $$(echo $^ | tr ' ' '\n' | grep '.c$$') -o ./tests/out/$@
 	./tests/out/$@
 
-codegen_Test: tests/out tests/codegen_Test.c $(BASE) primitives/parsing.h primitives/parsing.c primitives/codegen.h primitives/codegen.c primitives/Buffer_Parametric_Binding.h primitives/Buffer_Parametric_Binding.c buffer_string/Buffer_String.c buffer_string/Buffer_String.c primitives/Parametric_Binding.h primitives/Parametric_Binding.c
+codegen_Test: tests/out tests/codegen_Test.c $(BASE) $(PARSING) $(CODEGEN) $(PARAMETRIC_BINDING) $(BUFFER_PARAMETRIC_BINDING) $(BUFFER_STRING)
 	$(CC) $(CFLAGS) $(DEBUG) $$(echo $^ | tr ' ' '\n' | grep '.c$$') -o ./tests/out/$@
 	./tests/out/$@
 
-argparse_Test: tests/out tests/argparse_Test.c $(BASE) buffer_string/Buffer_String.h buffer_string/Buffer_String.c argparse/Buffer_String_argparse.h argparse/Buffer_String_argparse.c
+argparse_Test: tests/out tests/argparse_Test.c $(BASE) $(BUFFER_STRING) $(BUFFER_STRING_ARGPARSE)
 	$(CC) $(CFLAGS) $(DEBUG) $$(echo $^ | tr ' ' '\n' | grep '.c$$') -o ./tests/out/$@
 	./tests/out/$@
 
@@ -47,13 +58,13 @@ FM_Hash_Map_Int_Float_Test: codegen tests/FM_Hash_Map_Int_Float_Test.c generated
 	$(CC) $(CFLAGS) $(DEBUG) $$(echo $^ | tr ' ' '\n' | grep '.c$$') -o ./tests/out/$@
 	./tests/out/$@
 
-buffer_string: codegen templates/Buffer_T.h templates/Buffer_T.c
+buffer_string: codegen $(BUFFER_T)
 	mv buffer_string/Buffer_String.h buffer_string/Buffer_String_old.h
 	mv buffer_string/Buffer_String.c buffer_string/Buffer_String_old.c
 	./codegen -i templates/Buffer_T.h -o buffer_string/Buffer_String.h -T String $(CASE)
 	./codegen -i templates/Buffer_T.c -o buffer_string/Buffer_String.c -T String $(CASE)
 
-array_string: codegen templates/Array_T.h templates/Array_T.c
+array_string: codegen $(ARRAY_T)
 	mv array_string/Array_String.h array_string/Array_String_old.h
 	mv array_string/Array_String.c array_string/Array_String_old.c
 	./codegen -i templates/Array_T.h -o array_string/Array_String.h -T String $(CASE)
