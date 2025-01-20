@@ -1,6 +1,7 @@
 #include "../base.h"
+#include "../Arena.h"
 #include "../String.h"
-#include "./Parametric_Binding.h"
+#include "Parametric_Binding.h"
 
 struct Parametric_Binding Parametric_Binding_init(char c, char const* type_name,
 		char const* type_instance)

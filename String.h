@@ -3,14 +3,16 @@
  *
  * #include
  * - base.h
+ * - Arena.h
  */
 
-struct Arena Arena_init(int capacity);
 
-struct String String_empty();
-
-/// Wraps a cstring into a String.
-struct String String_wrap(char const* cstring);
+struct String_Builder
+{
+	u32 capacity;
+	u32 length;
+	char* str;
+};
 
 /// If capacity < 0, String takes up remaining space of arena.
 /// If capacity = 0, return empty String.
@@ -29,7 +31,3 @@ struct String_Builder String_append(struct String_Builder s1, struct String s2);
 struct String_Builder String_push(struct String_Builder s, char c);
 
 struct String String_Builder_build(struct String_Builder s);
-
-/// Returns true if :left == :right by colloquial String comparison.
-bool String_eq(struct String const left, struct String const right);
-bool String_ceq(struct String const left, char const* right);

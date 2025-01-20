@@ -5,13 +5,15 @@
 #include <string.h>
 
 #include "../base.h"
+#include "../Arena.h"
 #include "../String.h"
-#include "./Parametric_Binding.h"
+#include "Parametric_Binding.h"
 #include "../buffer_string/Buffer_String.h"
-#include "./Buffer_26_String.h"
-#include "./Buffer_Parametric_Binding.h"
+#include "Buffer_26_String.h"
+#include "Buffer_Parametric_Binding.h"
 
-#include "./codegen.h"
+#include "codegen.h"
+
 
 char const* const INCLUDE = "-include";
 char const* const INPUT   = "-i";
@@ -24,13 +26,6 @@ int const INCLUDE_LEN = 8;
 int const INPUT_LEN   = 2;
 int const OUTPUT_LEN  = 2;
 int const STRUCT_LEN  = 7;
-
-enum Binding_Type
-{
-	PRIMITIVE,
-	COMPOUND,
-	LITERAL
-};
 
 struct String_String
 {
@@ -64,7 +59,7 @@ struct String_String type_instance(struct Arena* arena, struct String arg)
 		return (struct String_String) {arg, arg};
 	}
 
-	int ptr_offset = 0;
+	unsigned int ptr_offset = 0;
 
 	while (ptr_offset < arg.length
 			&& arg.str[arg.length - ptr_offset - 1] == '*')
@@ -111,7 +106,7 @@ struct String_String type_instance(struct Arena* arena, struct String arg)
 
 int main(int argc, char* argv[])
 {
-	struct Buffer_26_String arg_bindings = Buffer_26_String_init(String_empty());
+	struct Buffer_26_String arg_bindings = Buffer_26_String_init((struct String){ 0 });
 	int num_bindings = 0;
 	int struct_instance = 0;  // Malloc enough space for instance names.
 	char* input = NULL;
@@ -145,7 +140,7 @@ int main(int argc, char* argv[])
 			args_includes = argv + i + 1;
 			num_includes = argc - (i + 1);
 
-			// -include should come at the end. No args can come after.
+			// `-include' should come at the end. No args can come after.
 			for (int j = i + 1; j < argc; j++)
 			{
 				char* include = argv[j];
@@ -154,7 +149,7 @@ int main(int argc, char* argv[])
 						|| is_arg(INCLUDE, include) || is_binding(include))
 				{
 					fprintf(stderr, "-include [paths...] should come at the "
-							"end. Found `%s`.\n", include);
+							"end. Found `%s'.\n", include);
 					exit(1);
 				}
 			}
@@ -175,12 +170,8 @@ int main(int argc, char* argv[])
 		}
 	}
 
-	struct Arena name_arena = Arena_init(struct_instance);
-
+	// `-include's
 	struct Buffer_String* includes = Buffer_String_init(num_includes);
-	struct Buffer_Parametric_Binding* bindings =
-			Buffer_Parametric_Binding_init(num_bindings);
-
 	for (int i = 0; i < num_includes; i++)
 	{
 		char* include = args_includes[i];
@@ -188,6 +179,12 @@ int main(int argc, char* argv[])
 		Buffer_String_push(includes, wrap(include));
 	}
 
+	struct Arena name_arena = Arena_init(struct_instance);
+	struct Buffer_Parametric_Binding* bindings =
+			Buffer_Parametric_Binding_init(num_bindings);
+
+	// Resolve `-T String' -> `struct String' and `NAME_String'
+	// Resolve `-T int' -> `int' and `NAME_Int'
 	for (int i = 0; i < 26; i++)
 	{
 		struct String binding = arg_bindings.buffer[i];
@@ -261,17 +258,13 @@ int main(int argc, char* argv[])
 	}
 
 	struct Arena input_arena = Arena_init(input_length);
-	struct String_Builder input_str = String_Builder_init(&input_arena, input_length);
+	struct String_Builder input_str = String_Builder_init(&input_arena,
+			input_length);
 
 	fread(input_str.str, sizeof(char), input_length, input_file);
 	input_str.length = input_length;
 
 	struct String output_str = codegen(args, String_Builder_build(input_str));
-	//if (generated == NULL)
-	//{
-	//	fprintf(stderr, "Unable to generate anything from the template file.\n");
-	//	return 1;
-	//}
 
 	fwrite(output_str.str, sizeof(char), output_str.length, output_file);
 

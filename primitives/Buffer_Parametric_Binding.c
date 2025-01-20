@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "../base.h"
+#include "../Arena.h"
 #include "../String.h"
 #include "./Parametric_Binding.h"
 #include "./Buffer_Parametric_Binding.h"

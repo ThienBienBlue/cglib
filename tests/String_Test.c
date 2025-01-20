@@ -2,16 +2,12 @@
 #include <stdlib.h>
 
 #include "../base.h"
+#include "../Arena.h"
 #include "../String.h"
 
 int main()
 {
-	char* bytes = (char*)malloc(7);
-	struct Arena arena = {
-		.capacity = 7,
-		.offset = 0,
-		.bytes = bytes
-	};
+	struct Arena arena = Arena_init(100);
 	struct String_Builder s = String_Builder_init(&arena, 1);
 
 	struct String_Builder s1 = String_push(s, '&');
@@ -25,7 +21,7 @@ int main()
 
 	struct String_Builder append = String_Builder_init(&arena, -1);
 
-	assert(append.capacity == 6);
+	assert(50 < append.capacity);
 	assert(append.length == 0);
 
 	struct String_Builder append1 = String_append(append,

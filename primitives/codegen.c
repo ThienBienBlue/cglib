@@ -1,12 +1,13 @@
 #include <stdbool.h>
 
 #include "../base.h"
+#include "../Arena.h"
 #include "../String.h"
-#include "./Parametric_Binding.h"
+#include "Parametric_Binding.h"
 #include "../buffer_string/Buffer_String.h"
 
-#include "./codegen.h"
-#include "./parsing.h"
+#include "codegen.h"
+#include "parsing.h"
 
 struct String codegen(struct Codegen_Args const args,
 		struct String const template_string)

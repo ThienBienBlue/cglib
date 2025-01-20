@@ -1,6 +1,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+// Definitions.
+
 typedef int8_t i8;
 typedef int16_t i16;
 typedef int32_t i32;
@@ -17,29 +19,11 @@ typedef long double f128;
 
 struct String
 {
-	i32 length;
+	u32 length;
 	char const* str;
 };
 
-struct String_Builder
-{
-	i32 capacity;
-	i32 length;
-	char* str;
-};
-
-struct Arena
-{
-	i32 capacity;
-	i32 offset;
-	void* bytes;
-};
-
-#ifndef __cplusplus
-	#include <stddef.h>
-	#define null NULL
-	#define nullptr NULL
-#endif
+// Functions.
 
 #define UNUSED(arg) (void)(arg)
 
@@ -49,5 +33,23 @@ struct Arena
 #define min(a, b) (((a) < (b)) ? (a) : (b))
 #define max(a, b) (((a) < (b)) ? (b) : (a))
 
+bool zero_struct(void* struct_, u32 size);
+#define zerostruct(struct_) zero_struct((struct_), sizeof(struct_))
+
+#ifndef __cplusplus
+	#include <stddef.h>
+	#define null NULL
+	#define nullptr NULL
+#endif
+
 u32 mmod(i32 a, u32 n);  // Standard mathematical Least Positive Residue.
 i32 dkmod(i32 a, i32 n);  // Donald Knuth definition where n dictates sign.
+
+/// Wraps a cstring into a String.
+struct String String_wrap(char const* cstring);
+
+#define String_mwrap(cstring) (struct String) { mstrlen((cstring)), (cstring) }
+
+/// Returns true if :left == :right by colloquial String comparison.
+bool String_eq(struct String const left, struct String const right);
+bool String_ceq(struct String const left, char const* right);

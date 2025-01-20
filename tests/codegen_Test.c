@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "../base.h"
+#include "../Arena.h"
 #include "../String.h"
 #include "../primitives/Parametric_Binding.h"
 #include "../primitives/Buffer_Parametric_Binding.h"
@@ -20,7 +21,7 @@ void assert_codegen(struct Codegen_Args args, char* template, char* output)
 	struct String _template = String_wrap(template);
 	struct String const generated = codegen(args, _template);
 
-	assert((int)strlen(output) == generated.length);
+	assert(strlen(output) == generated.length);
 	assert(strncmp(generated.str, output, generated.length) == 0);
 }
 

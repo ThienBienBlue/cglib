@@ -1,6 +1,7 @@
 #include <assert.h>
 
 #include "../base.h"
+#include "../Arena.h"
 #include "../buffer_string/Buffer_String.h"
 #include "../argparse/Buffer_String_argparse.h"
 #include "../String.h"

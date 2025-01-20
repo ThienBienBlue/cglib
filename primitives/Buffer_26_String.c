@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "../base.h"
+#include "../Arena.h"
 #include "../String.h"
 #include "./Buffer_26_String.h"
 

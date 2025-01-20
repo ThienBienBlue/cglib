@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "../base.h"
+#include "../Arena.h"
 #include "../String.h"
 #include "../primitives/Parametric_Binding.h"
 #include "../primitives/Buffer_Parametric_Binding.h"
@@ -35,7 +36,7 @@ void assert_type_name(struct Buffer_Parametric_Binding const* bindings,
 
 	if (output != NULL)
 	{
-		assert((int)strlen(output) == parsed.length);
+		assert(strlen(output) == parsed.length);
 		assert(strncmp(parsed.str, output, parsed.length) == 0);
 	}
 	else
@@ -53,7 +54,7 @@ void assert_instance_name(struct Buffer_Parametric_Binding const* bindings,
 
 	if (output != NULL)
 	{
-		assert((int)strlen(output) == parsed.length);
+		assert(strlen(output) == parsed.length);
 		assert(strncmp(parsed.str, output, parsed.length) == 0);
 	}
 	else

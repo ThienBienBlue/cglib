@@ -14,7 +14,7 @@ struct String_Offset
 ///  consumed by match. Empty String otherwise.
 struct String_Offset match_instance_name(
 		struct Buffer_Parametric_Binding const* bindings,
-		struct String const str, int offset);
+		struct String const str, u32 offset);
 
 /// Reads from :str at :offset and attempts to match <ABC>, <D, E>, etc.
 /// :returns a String with the name of the corresponding match and number of

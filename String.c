@@ -1,64 +1,29 @@
 #include <stdbool.h>
-#include <stdlib.h>
 #include <string.h>
 
-#include "./base.h"
-#include "./String.h"
+#include "base.h"
+#include "Arena.h"
+#include "String.h"
+
 
 struct String EMPTY_STRING = {0};
 struct String_Builder EMPTY_BUILDER = {0};
 
-struct Arena Arena_init(i32 capacity)
-{
-	char* buf = (char*)malloc(capacity);
-
-	if (buf != null)
-	{
-		return (struct Arena) {
-			.offset = 0,
-			.capacity = capacity,
-			.bytes = buf
-		};
-	}
-	else
-	{
-		return (struct Arena) {0};
-	}
-}
-
-struct String String_empty()
-{
-	return EMPTY_STRING;
-}
-
-struct String String_wrap(char const* cstring)
-{
-	return (struct String) {
-		.length = strlen(cstring),
-		.str = cstring
-	};
-}
-
 struct String_Builder String_Builder_init(struct Arena* arena, i32 capacity)
 {
-	bool fits = 0 < capacity && (arena->offset + capacity <= arena->capacity);
+	struct Arena_Alloc buffer = Arena_pack(arena, capacity);
 
-	if (fits || capacity < 0)
+	if (buffer.capacity)
 	{
-		i32 cap = (fits) ? capacity : arena->capacity - arena->offset;
-		struct String_Builder retval = {
-			.length = 0,
-			.capacity = cap,
-			.str = arena->bytes + arena->offset
+		return (struct String_Builder){
+			capacity,
+			0,
+			arena->bytes + buffer.offset
 		};
-
-		arena->offset += cap;
-
-		return retval;
 	}
 	else
 	{
-		return (struct String_Builder) {0};
+		return (struct String_Builder){ 0 };
 	}
 }
 
@@ -103,30 +68,8 @@ struct String_Builder String_push(struct String_Builder s1, char c)
 
 struct String String_Builder_build(struct String_Builder s)
 {
-	return (struct String) {
+	return (struct String){
 		.length = s.length,
 		.str = s.str
 	};
-}
-
-bool String_eq(struct String const left, struct String const right)
-{
-	if (left.length != right.length)
-	{
-		return false;
-	}
-
-	i32 l, r;
-	char const* lstr = left.str;
-	char const* rstr = right.str;
-
-	for (l = 0, r = 0; l < left.length && lstr[l] == rstr[r]; l++, r++)
-	{}
-
-	return l == left.length;
-}
-
-bool String_ceq(struct String const left, char const* right)
-{
-	return String_eq(left, String_wrap(right));
 }

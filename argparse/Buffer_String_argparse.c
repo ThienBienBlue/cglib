@@ -15,10 +15,10 @@ static char const QUOTE2 = '"';
 
 struct Buffer_String* Buffer_String_shell_lite_split(struct String const args)
 {
-	i32 args_begin = args.length;
-	i32 args_count = 0;
+	u32 args_begin = args.length;
+	u32 args_count = 0;
 
-	for (i32 i = 0; i < args.length;)
+	for (u32 i = 0; i < args.length;)
 	{
 		char c = args.str[i];
 
@@ -57,7 +57,7 @@ struct Buffer_String* Buffer_String_shell_lite_split(struct String const args)
 		}
 
 		// Advance :j to the first character that ends this word.
-		i32 j;
+		u32 j;
 		for (j = i + 1; j < args.length; j++)
 		{
 			char jc = args.str[j];
@@ -91,7 +91,7 @@ struct Buffer_String* Buffer_String_shell_lite_split(struct String const args)
 	// Second pass, record the words.
 	struct Buffer_String* retval = Buffer_String_init(args_count);
 
-	for (i32 i = args_begin; i < args.length;)
+	for (u32 i = args_begin; i < args.length;)
 	{
 		char c = args.str[i];
 
@@ -130,7 +130,7 @@ struct Buffer_String* Buffer_String_shell_lite_split(struct String const args)
 		}
 
 		// Advance :j to the first character that ends this word.
-		i32 j;
+		u32 j;
 		for (j = i + 1; j < args.length; j++)
 		{
 			char jc = args.str[j];

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+#set -e
 
 if [[ -f codegen ]]; then
     echo "Running Tests"

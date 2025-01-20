@@ -3,6 +3,7 @@
 #include <stddef.h>
 
 #include "../base.h"
+#include "../Arena.h"
 #include "../String.h"
 #include "./Parametric_Binding.h"
 #include "./Buffer_Parametric_Binding.h"
@@ -35,11 +36,11 @@ struct String_Offset make(struct String string, int offset)
 
 struct String_Offset match_instance_name(
 		struct Buffer_Parametric_Binding const* bindings,
-		struct String const str, int offset)
+		struct String const str, unsigned int offset)
 {
 	char const* s = str.str;
 	char instance = s[offset];
-	bool valid_prev_char = (offset - 1 < 0) || is_instance_char(s[offset - 1]);
+	bool valid_prev_char = (offset == 0) || is_instance_char(s[offset - 1]);
 	bool valid_next_char = (str.length <= offset + 1) ||
 			is_instance_char(s[offset + 1]);
 	bool valid_char = isupper(instance);
@@ -55,12 +56,13 @@ struct String_Offset match_instance_name(
 		}
 		else
 		{
-			return make(String_empty(), 0);
+			return make((struct String){ 0 }, 0);
 		}
 	}
 	else
 	{
-		return make(String_empty(), 0);
+		return make((struct String){ 0 }, 0);
+
 	}
 }
 
@@ -85,7 +87,7 @@ struct String_Offset match_type_name(
 	}
 	else
 	{
-		return make(String_empty(), 0);
+		return make((struct String){ 0 }, 0);
 	}
 
 	bool closed = false;
@@ -147,6 +149,6 @@ struct String_Offset match_type_name(
 	}
 	else
 	{
-		return make(String_empty(), 0);
+		return make((struct String){ 0 }, 0);
 	}
 }
