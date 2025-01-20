@@ -13,7 +13,7 @@ ARRAY_T = templates/Array_T.h templates/Array_T.c
 BUFFER_STRING = buffer_string/Buffer_String.h buffer_string/Buffer_String.c
 BUFFER_STRING_ARGPARSE = argparse/Buffer_String_argparse.h argparse/Buffer_String_argparse.c
 CODEGEN = primitives/codegen.h primitives/codegen.c
-PARAMETRIC_BINDING = primitives/Parametric_Binding.h primitives/Parametric_Binding.c
+PARAMETRIC_BINDING = primitives/Parametric_Binding.h
 BUFFER_PARAMETRIC_BINDING = primitives/Buffer_Parametric_Binding.h primitives/Buffer_Parametric_Binding.c
 
 PRIMITIVES = primitives/*

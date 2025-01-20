@@ -6,14 +6,11 @@
 #include "String.h"
 
 
-struct String EMPTY_STRING = {0};
-struct String_Builder EMPTY_BUILDER = {0};
-
 struct String_Builder String_Builder_init(struct Arena* arena, i32 capacity)
 {
 	struct Arena_Alloc buffer = Arena_pack(arena, capacity);
 
-	if (buffer.capacity)
+	if (!iszero(buffer))
 	{
 		return (struct String_Builder){
 			capacity,
@@ -35,7 +32,7 @@ struct String_Builder String_append(struct String_Builder s1, struct String s2)
 	{
 		char* copied = memmove(s1.str + s1.length, s2.str, s2.length);
 
-		if (copied != null)
+		if (copied)
 		{
 			s1.length += s2.length;
 
@@ -43,18 +40,18 @@ struct String_Builder String_append(struct String_Builder s1, struct String s2)
 		}
 		else
 		{
-			return EMPTY_BUILDER;
+			return (struct String_Builder){ 0 };
 		}
 	}
 	else
 	{
-		return EMPTY_BUILDER;
+		return (struct String_Builder){ 0 };
 	}
 }
 
 struct String_Builder String_push(struct String_Builder s1, char c)
 {
-	if (0 < s1.capacity - s1.length)
+	if (s1.length < s1.capacity)
 	{
 		s1.str[s1.length++] = c;
 
@@ -62,7 +59,7 @@ struct String_Builder String_push(struct String_Builder s1, char c)
 	}
 	else
 	{
-		return EMPTY_BUILDER;
+		return (struct String_Builder){ 0 };
 	}
 }
 

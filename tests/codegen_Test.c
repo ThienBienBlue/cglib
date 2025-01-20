@@ -11,9 +11,10 @@
 
 #include "../primitives/codegen.h"
 
-struct Parametric_Binding binding(char c, char* t, char* i)
+
+struct Parametric_Binding binding(char c, char* n, char* i)
 {
-	return Parametric_Binding_init(c, t, i);
+	return (struct Parametric_Binding){ c, String_wrap(n), String_wrap(i) };
 }
 
 void assert_codegen(struct Codegen_Args args, char* template, char* output)
@@ -21,8 +22,7 @@ void assert_codegen(struct Codegen_Args args, char* template, char* output)
 	struct String _template = String_wrap(template);
 	struct String const generated = codegen(args, _template);
 
-	assert(strlen(output) == generated.length);
-	assert(strncmp(generated.str, output, generated.length) == 0);
+	assert(String_ceq(generated, output));
 }
 
 int main()

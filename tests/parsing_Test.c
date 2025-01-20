@@ -34,14 +34,13 @@ void assert_type_name(struct Buffer_Parametric_Binding const* bindings,
 	struct String parsed =
 			match_type_name(bindings, style, &arena, _template, 0).binding;
 
-	if (output != NULL)
+	if (output)
 	{
-		assert(strlen(output) == parsed.length);
-		assert(strncmp(parsed.str, output, parsed.length) == 0);
+		assert(String_ceq(parsed, output));
 	}
 	else
 	{
-		assert(parsed.str == NULL);
+		assert(iszero(parsed));
 	}
 }
 
@@ -54,12 +53,11 @@ void assert_instance_name(struct Buffer_Parametric_Binding const* bindings,
 
 	if (output != NULL)
 	{
-		assert(strlen(output) == parsed.length);
-		assert(strncmp(parsed.str, output, parsed.length) == 0);
+		assert(String_ceq(parsed, output));
 	}
 	else
 	{
-		assert(parsed.str == NULL);
+		assert(iszero(parsed));
 	}
 }
 
