@@ -30,6 +30,7 @@ struct Arena_Alloc Arena_malloc(struct Arena* self, u32 alignment, i32 size)
 	// Ensure proper pointer alignment.
 	uintptr_t offset = (uintptr_t)(self->bytes + self->offset);
 	uintptr_t aligned_offset = (offset + alignment - 1) & (~(alignment - 1));
+	// TBD: UB with dropping the upper bits? sizeof(u32) < sizeof(uintptr_t)
 	u32 _aligned_offset = aligned_offset - (uintptr_t)self->bytes;
 
 	if (size < 0)

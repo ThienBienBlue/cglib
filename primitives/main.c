@@ -212,11 +212,11 @@ int main(int argc, char* argv[])
 	// Validate the CLI Args.
 	if (input == NULL)
 	{
-		fprintf(stderr, "Missing input file. Usage `-i ./path/to/input.h`.\n");
+		fprintf(stderr, "Missing input file. Usage `-i ./path/to/input.h'.\n");
 	}
 	if (output == NULL)
 	{
-		fprintf(stderr, "Missing output file target. Usage `-o ./path/to/output.h`.\n");
+		fprintf(stderr, "Missing output file target. Usage `-o ./path/to/output.h'.\n");
 	}
 	if (input == NULL || output == NULL)
 	{

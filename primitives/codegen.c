@@ -12,9 +12,7 @@
 struct String codegen(struct Codegen_Args const args,
 		struct String const template_string)
 {
-	int init_amount = (2 * template_string.length < 1024)
-			? 1024
-			: 2 * template_string.length;
+	int init_amount = max(1024, 2 * template_string.length);
 	struct Arena arena = Arena_init(init_amount);
 	struct Arena binding_zero = Arena_init(100);
 	struct String_Builder retval = String_Builder_init(&arena, -1);
@@ -34,7 +32,7 @@ struct String codegen(struct Codegen_Args const args,
 
 	for (int i = 0; i < str_len;)
 	{
-		// Inject `#include`.
+		// Inject `#include'.
 		if (include_state == PRIMED)
 		{
 			// First line of code is a good spot to inject.
