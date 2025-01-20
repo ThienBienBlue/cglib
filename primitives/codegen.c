@@ -88,26 +88,26 @@ struct String codegen(struct Codegen_Args const args,
 		// default to appending the current character.
 		{
 			struct Arena binding_arena = binding_zero;
-			struct String_Offset append_type = match_type_name(bindings, args.style,
+			struct Binding_At append_type = match_type_name(bindings, args.style,
 					&binding_arena, template_string, i);
 
-			if (0 < append_type.offset)
+			if (!iszero(append_type))
 			{
-				retval = String_append(retval, append_type.string);
-				i += append_type.offset;
+				retval = String_append(retval, append_type.binding);
+				i += append_type.occupies;
 
 				continue;
 			}
 		}
 
 		{
-			struct String_Offset append_instance = match_instance_name(bindings,
+			struct Binding_At append_instance = match_instance_name(bindings,
 					template_string, i);
 
-			if (0 < append_instance.offset)
+			if (!iszero(append_instance))
 			{
-				retval = String_append(retval, append_instance.string);
-				i += append_instance.offset;
+				retval = String_append(retval, append_instance.binding);
+				i += append_instance.occupies;
 
 				continue;
 			}

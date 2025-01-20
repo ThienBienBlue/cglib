@@ -11,6 +11,7 @@
 #include "./codegen.h"
 #include "./parsing.h"
 
+
 bool is_whitespace(char c)
 {
 	return ' ' == c || '\n' == c || '\t' == c;
@@ -26,15 +27,7 @@ bool is_instance_char(char c)
 	return !is_variable_name(c) && c != '<' && c != '>';
 }
 
-struct String_Offset make(struct String string, int offset)
-{
-	return (struct String_Offset) {
-		.string = string,
-		.offset = offset
-	};
-}
-
-struct String_Offset match_instance_name(
+struct Binding_At match_instance_name(
 		struct Buffer_Parametric_Binding const* bindings,
 		struct String const str, unsigned int offset)
 {
@@ -52,21 +45,20 @@ struct String_Offset match_instance_name(
 
 		if (binding != NULL)
 		{
-			return make(binding->type_instance, 1);
+			return (struct Binding_At){ binding->type_instance, 1 };
 		}
 		else
 		{
-			return make((struct String){ 0 }, 0);
+			return (struct Binding_At){ 0 };
 		}
 	}
 	else
 	{
-		return make((struct String){ 0 }, 0);
-
+		return (struct Binding_At){ 0 };
 	}
 }
 
-struct String_Offset match_type_name(
+struct Binding_At match_type_name(
 		struct Buffer_Parametric_Binding const* bindings, enum Code_Style style,
 		struct Arena* arena, struct String const str, int offset)
 {
@@ -87,7 +79,7 @@ struct String_Offset match_type_name(
 	}
 	else
 	{
-		return make((struct String){ 0 }, 0);
+		return (struct Binding_At){ 0 };
 	}
 
 	bool closed = false;
@@ -145,10 +137,13 @@ struct String_Offset match_type_name(
 
 	if (closed)
 	{
-		return make(String_Builder_build(retval), consumed);
+		return (struct Binding_At){
+			String_Builder_build(retval),
+			consumed
+		};
 	}
 	else
 	{
-		return make((struct String){ 0 }, 0);
+		return (struct Binding_At){ 0 };
 	}
 }

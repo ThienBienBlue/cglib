@@ -32,7 +32,7 @@ void assert_type_name(struct Buffer_Parametric_Binding const* bindings,
 	struct Arena arena = zero;
 	struct String _template = String_wrap(template);
 	struct String parsed =
-			match_type_name(bindings, style, &arena, _template, 0).string;
+			match_type_name(bindings, style, &arena, _template, 0).binding;
 
 	if (output != NULL)
 	{
@@ -50,7 +50,7 @@ void assert_instance_name(struct Buffer_Parametric_Binding const* bindings,
 {
 	struct String _template = String_wrap(template);
 	struct String parsed =
-			match_instance_name(bindings, _template, offset).string;
+			match_instance_name(bindings, _template, offset).binding;
 
 	if (output != NULL)
 	{

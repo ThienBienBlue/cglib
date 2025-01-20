@@ -11,12 +11,12 @@ u32 mmod(i32 a, u32 n)
 	return (0 <= near_zero) ? near_zero : near_zero + as_signed;
 }
 
-bool zero_struct(void* struct_, u32 size)
+bool zero_bytes(void* bytes, u32 size)
 {
-	char* casted = (char*)struct_;
+	char* _bytes = (char*)bytes;
 	for (u32 i = 0; i < size; i++)
 	{
-		if (!casted[i])
+		if (_bytes[i])
 		{
 			return false;
 		}

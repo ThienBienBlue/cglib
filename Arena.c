@@ -38,13 +38,16 @@ struct Arena_Alloc Arena_alloc(struct Arena* self, i32 size)
 	if (size < 0)
 	{
 		u32 alloc_capacity = self->capacity - _aligned_offset;
+
 		self->offset = self->capacity;
+		bzero(self->bytes + offset, alloc_capacity);
 
 		return (struct Arena_Alloc){ alloc_capacity, _aligned_offset };
 	}
 	else if (_aligned_offset + size <= self->capacity)
 	{
 		self->offset = _aligned_offset + size;
+		bzero(self->bytes + _aligned_offset, size);
 
 		return (struct Arena_Alloc){ size, _aligned_offset };
 	}
