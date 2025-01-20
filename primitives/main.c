@@ -27,10 +27,10 @@ int const INPUT_LEN   = 2;
 int const OUTPUT_LEN  = 2;
 int const STRUCT_LEN  = 7;
 
-struct String_String
+struct Name_Instance
 {
-	struct String s1;
-	struct String s2;
+	struct String name;
+	struct String instance;
 };
 
 static bool is_binding(char* arg)
@@ -48,18 +48,18 @@ static struct String wrap(char const* const str)
 	return String_wrap(str);
 }
 
-struct String_String type_instance(struct Arena* arena, struct String arg)
+struct Name_Instance type_instance(struct Arena* arena, struct String arg)
 {
 	if (arg.length <= 0)
 	{
-		return (struct String_String) {0};
+		return (struct Name_Instance){0};
 	}
 	if (!isalpha(arg.str[0]))
 	{
-		return (struct String_String) {arg, arg};
+		return (struct Name_Instance){arg, arg};
 	}
 
-	unsigned int ptr_offset = 0;
+	u32 ptr_offset = 0;
 
 	while (ptr_offset < arg.length
 			&& arg.str[arg.length - ptr_offset - 1] == '*')
@@ -67,41 +67,41 @@ struct String_String type_instance(struct Arena* arena, struct String arg)
 		ptr_offset++;
 	}
 
-	struct String type;
-	struct String instance;
+	struct String name;  // `Buffer<T>' -> `Buffer_String'
+	struct String instance;  // `T inst' -> `struct String inst'
 
 	if (islower(arg.str[0]))
 	{
-		// Primitive case
-		struct String_Builder _type = String_Builder_init(arena, arg.length);
+		// Primitive case.
+		struct String_Builder _name = String_Builder_init(arena, arg.length);
 
-		_type = String_append(_type, arg);
-		_type.str[0] += 'A' - 'a';
+		_name = String_append(_name, arg);
+		_name.str[0] += 'A' - 'a';
 
-		type = String_Builder_build(_type);
+		name = String_Builder_build(_name);
 		instance = arg;
 	}
 	else if (isupper(arg.str[0]))
 	{
-		// Compound type case.
+		// struct type case.
 		struct String_Builder _instance = String_Builder_init(arena,
 				STRUCT_LEN + arg.length);
 
 		_instance = String_append(_instance, wrap(STRUCT));
 		_instance = String_append(_instance, arg);
 
-		type = arg;
+		name = arg;
 		instance = String_Builder_build(_instance);
 	}
 	else
 	{
-		type = arg;
+		name = arg;
 		instance = arg;
 	}
 
-	type.length -= ptr_offset;
+	name.length -= ptr_offset;
 
-	return (struct String_String) {type, instance};
+	return (struct Name_Instance) {name, instance};
 }
 
 int main(int argc, char* argv[])
@@ -191,12 +191,12 @@ int main(int argc, char* argv[])
 
 		if (0 < binding.length)
 		{
-			struct String_String binding_parsed = type_instance(&name_arena,
+			struct Name_Instance binding_parsed = type_instance(&name_arena,
 					binding);
 			struct Parametric_Binding _binding = {
 				.parametric = 'A' + i,
-				.type_name = binding_parsed.s1,
-				.type_instance = binding_parsed.s2
+				.type_name = binding_parsed.name,
+				.type_instance = binding_parsed.instance
 			};
 
 			Buffer_Parametric_Binding_push(bindings, _binding);

@@ -37,7 +37,8 @@ struct String
 #define min(a, b) (((a) < (b)) ? (a) : (b))
 #define max(a, b) (((a) < (b)) ? (b) : (a))
 
-// :returns true if :struct_ consists of all zero bytes.
+/// HERE BE DRAGONS - this might be UB.
+/// :returns true if :struct_ consists of all zero bytes.
 bool zero_bytes(void* bytes, u32 size);
 #define iszero(struct_) zero_bytes(&(struct_), sizeof(struct_))
 
