@@ -6,6 +6,7 @@
 // Definitions.
 //-------------
 
+// TBD: How to guarantee any of this?
 typedef int8_t i8;
 typedef int16_t i16;
 typedef int32_t i32;
@@ -18,7 +19,6 @@ typedef uint64_t u64;
 
 typedef float f32;
 typedef double f64;
-typedef long double f128;
 
 struct String
 {
@@ -32,7 +32,7 @@ struct String
 
 #define UNUSED(arg) (void)(arg)
 
-#define arraycount(a) (sizeof(a) / sizeof(*(a)))
+#define arraylen(a) (sizeof(a) / sizeof(*(a)))
 #define mstrlen(str) (sizeof(str) - 1)  // -1 to account for zero terminator.
 
 #define min(a, b) (((a) < (b)) ? (a) : (b))

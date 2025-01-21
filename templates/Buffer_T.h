@@ -19,7 +19,7 @@ struct Buffer<T>* Buffer<T>_init(i32 capacity);
 
 struct Buffer<T>* Buffer<T>_from_ptr(i32 capacity, T* ptr);
 
-#define Buffer<T>_from_carray(a) Buffer<T>_from_ptr(arraycount(a), (a))
+#define Buffer<T>_from_carray(a) Buffer<T>_from_ptr(arraylen(a), (a))
 
 struct Buffer<T>* Buffer<T>_filter(struct Buffer<T>* self, bool (*filter)(T));
 

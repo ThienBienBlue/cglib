@@ -2,9 +2,9 @@
 
 ** Additions to base layer
 
-*** Primitives
+*** Base Types
 
-Strings, String_Builder
+Arena, String, String_Builder
 
 *** Data Structures
 
@@ -18,9 +18,11 @@ FM_Hash_Map<KV>: Fixed Size, Malloc'ed Hash Map of K to V.
 
 *** Macros
 
+UNUSED
+
 NULL: ~null~ and ~nullptr~
 
-arraycount: The number of elements in a compile time fixed size array.
+arraylen: The number of elements in a compile time fixed size array.
 
 mstrlen: M(acro) strlen.
 
