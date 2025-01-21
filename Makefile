@@ -7,13 +7,12 @@ CASE = --snake-case
 
 # Modules.
 BASE = base.h base.c Arena.h Arena.c String.h String.c
-PARSING = primitives/parsing.h primitives/parsing.c
+PARSING = primitives/bindings.h primitives/parsing.h primitives/parsing.c
 BUFFER_T = templates/Buffer_T.h templates/Buffer_T.c
 ARRAY_T = templates/Array_T.h templates/Array_T.c
 BUFFER_STRING = buffer_string/Buffer_String.h buffer_string/Buffer_String.c
 BUFFER_STRING_ARGPARSE = argparse/Buffer_String_argparse.h argparse/Buffer_String_argparse.c
 CODEGEN = primitives/codegen.h primitives/codegen.c
-PARAMETRIC_BINDING = primitives/Parametric_Binding.h
 BUFFER_PARAMETRIC_BINDING = primitives/Buffer_Parametric_Binding.h primitives/Buffer_Parametric_Binding.c
 
 PRIMITIVES = primitives/*
@@ -36,11 +35,11 @@ String_Test: tests/out tests/String_Test.c $(BASE)
 	$(CC) $(CFLAGS) $(DEBUG) $$(echo $^ | tr ' ' '\n' | grep '.c$$') -o ./tests/out/$@
 	./tests/out/$@
 
-parsing_Test: tests/out tests/parsing_Test.c $(BASE) $(PARSING) $(PARAMETRIC_BINDING) $(BUFFER_PARAMETRIC_BINDING)
+parsing_Test: tests/out tests/parsing_Test.c $(BASE) $(PARSING) $(BUFFER_PARAMETRIC_BINDING)
 	$(CC) $(CFLAGS) $(DEBUG) $$(echo $^ | tr ' ' '\n' | grep '.c$$') -o ./tests/out/$@
 	./tests/out/$@
 
-codegen_Test: tests/out tests/codegen_Test.c $(BASE) $(PARSING) $(CODEGEN) $(PARAMETRIC_BINDING) $(BUFFER_PARAMETRIC_BINDING) $(BUFFER_STRING)
+codegen_Test: tests/out tests/codegen_Test.c $(BASE) $(PARSING) $(CODEGEN) $(BUFFER_PARAMETRIC_BINDING) $(BUFFER_STRING)
 	$(CC) $(CFLAGS) $(DEBUG) $$(echo $^ | tr ' ' '\n' | grep '.c$$') -o ./tests/out/$@
 	./tests/out/$@
 

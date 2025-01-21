@@ -9,7 +9,7 @@
 #include "../String.h"
 #include "../buffer_string/Buffer_String.h"
 #include "Buffer_26_String.h"
-#include "Parametric_Binding.h"
+#include "bindings.h"
 #include "Buffer_Parametric_Binding.h"
 #include "parsing.h"
 #include "codegen.h"
@@ -115,12 +115,9 @@ int main(int argc, char* argv[])
 
 		if (0 < binding.length)
 		{
-			struct Name_Instance type = name_instance(&binding_arena,
-					binding);
 			struct Parametric_Binding _binding = {
 				.parametric = 'A' + i,
-				.type_name = type.name,
-				.type_instance = type.instance
+				.type = name_instance(&binding_arena, binding)
 			};
 
 			Buffer_Parametric_Binding_push(bindings, _binding);

@@ -5,8 +5,9 @@
 #include "../base.h"
 #include "../Arena.h"
 #include "../String.h"
-#include "./Parametric_Binding.h"
-#include "./Buffer_Parametric_Binding.h"
+#include "bindings.h"
+#include "Buffer_Parametric_Binding.h"
+
 
 struct Buffer_Parametric_Binding* Buffer_Parametric_Binding_init(int capacity)
 {

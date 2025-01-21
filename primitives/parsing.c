@@ -5,9 +5,9 @@
 #include "../base.h"
 #include "../Arena.h"
 #include "../String.h"
-#include "./Parametric_Binding.h"
-#include "./Buffer_Parametric_Binding.h"
-#include "./parsing.h"
+#include "bindings.h"
+#include "Buffer_Parametric_Binding.h"
+#include "parsing.h"
 
 
 bool is_whitespace(char c)
@@ -43,7 +43,7 @@ struct Binding_At match_instance_name(
 
 		if (binding != NULL)
 		{
-			return (struct Binding_At){ binding->type_instance, 1 };
+			return (struct Binding_At){ binding->type.instance, 1 };
 		}
 		else
 		{
@@ -113,7 +113,7 @@ struct Binding_At match_type_name(
 
 			if (binding != NULL)
 			{
-				retval = String_append(retval, binding->type_name);
+				retval = String_append(retval, binding->type.name);
 			}
 			else
 			{

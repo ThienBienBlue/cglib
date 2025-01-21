@@ -5,24 +5,21 @@
 #include "../base.h"
 #include "../Arena.h"
 #include "../String.h"
-#include "../primitives/Parametric_Binding.h"
+#include "../primitives/bindings.h"
 #include "../primitives/Buffer_Parametric_Binding.h"
-
 #include "../primitives/parsing.h"
 
 struct Arena zero;
 
-struct Parametric_Binding binding(char c, char* type_name, char* instance_name)
+struct Parametric_Binding binding(char c, char* type_name, char* type_instance)
 {
-	struct String _type_name = String_wrap(type_name);
-	struct String _instance_name = String_wrap(instance_name);
-	struct Parametric_Binding binding = {
+	return (struct Parametric_Binding){
 		.parametric = c,
-		.type_name = _type_name,
-		.type_instance = _instance_name
+		.type = {
+			.name = String_wrap(type_name),
+			.instance = String_wrap(type_instance)
+		}
 	};
-
-	return binding;
 }
 
 void assert_type_name(struct Buffer_Parametric_Binding const* bindings,
