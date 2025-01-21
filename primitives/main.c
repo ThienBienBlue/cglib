@@ -7,101 +7,23 @@
 #include "../base.h"
 #include "../Arena.h"
 #include "../String.h"
-#include "Parametric_Binding.h"
 #include "../buffer_string/Buffer_String.h"
 #include "Buffer_26_String.h"
+#include "Parametric_Binding.h"
 #include "Buffer_Parametric_Binding.h"
-
+#include "parsing.h"
 #include "codegen.h"
 
 
-char const* const INCLUDE = "-include";
-char const* const INPUT   = "-i";
-char const* const OUTPUT  = "-o";
-char const* const STRUCT  = "struct ";
-char const* const CAMEL_CASE_ARG = "--camel-case";
-char const* const SNAKE_CASE_ARG = "--snake-case";
+struct String const INCLUDE = String_mwrap("-include");
+struct String const INPUT   = String_mwrap("-i");
+struct String const OUTPUT  = String_mwrap("-o");
+struct String const CAMEL_CASE_ARG = String_mwrap("--camel-case");
+struct String const SNAKE_CASE_ARG = String_mwrap("--snake-case");
 
-int const INCLUDE_LEN = 8;
-int const INPUT_LEN   = 2;
-int const OUTPUT_LEN  = 2;
-int const STRUCT_LEN  = 7;
-
-struct Name_Instance
+static bool is_binding(struct String const arg)
 {
-	struct String name;
-	struct String instance;
-};
-
-static bool is_binding(char* arg)
-{
-	return strlen(arg) == 2 && arg[0] == '-' && isupper(arg[1]);
-}
-
-static bool is_arg(char const* expected, char* arg)
-{
-	return strcmp(expected, arg) == 0;
-}
-
-static struct String wrap(char const* const str)
-{
-	return String_wrap(str);
-}
-
-struct Name_Instance type_instance(struct Arena* arena, struct String arg)
-{
-	if (arg.length <= 0)
-	{
-		return (struct Name_Instance){0};
-	}
-	if (!isalpha(arg.str[0]))
-	{
-		return (struct Name_Instance){arg, arg};
-	}
-
-	u32 ptr_offset = 0;
-
-	while (ptr_offset < arg.length
-			&& arg.str[arg.length - ptr_offset - 1] == '*')
-	{
-		ptr_offset++;
-	}
-
-	struct String name;  // `Buffer<T>' -> `Buffer_String'
-	struct String instance;  // `T inst' -> `struct String inst'
-
-	if (islower(arg.str[0]))
-	{
-		// Primitive case.
-		struct String_Builder _name = String_Builder_init(arena, arg.length);
-
-		_name = String_append(_name, arg);
-		_name.str[0] += 'A' - 'a';
-
-		name = String_Builder_build(_name);
-		instance = arg;
-	}
-	else if (isupper(arg.str[0]))
-	{
-		// struct type case.
-		struct String_Builder _instance = String_Builder_init(arena,
-				STRUCT_LEN + arg.length);
-
-		_instance = String_append(_instance, wrap(STRUCT));
-		_instance = String_append(_instance, arg);
-
-		name = arg;
-		instance = String_Builder_build(_instance);
-	}
-	else
-	{
-		name = arg;
-		instance = arg;
-	}
-
-	name.length -= ptr_offset;
-
-	return (struct Name_Instance) {name, instance};
+	return arg.length == 2 && arg.str[0] == '-' && isupper(arg.str[1]);
 }
 
 int main(int argc, char* argv[])
@@ -117,25 +39,25 @@ int main(int argc, char* argv[])
 
 	for (int i = 0; i < argc; i++)
 	{
-		char* arg = argv[i];
+		struct String arg = String_wrap(argv[i]);
 
-		if (is_arg(INPUT, arg))
+		if (String_eq(arg, INPUT))
 		{
 			input = argv[++i];
 		}
-		else if (is_arg(OUTPUT, arg))
+		else if (String_eq(arg, OUTPUT))
 		{
 			output = argv[++i];
 		}
-		else if (is_arg(SNAKE_CASE_ARG, arg))
+		else if (String_eq(arg, SNAKE_CASE_ARG))
 		{
 			style = SNAKE_CASE;
 		}
-		else if (is_arg(CAMEL_CASE_ARG, arg))
+		else if (String_eq(arg, CAMEL_CASE_ARG))
 		{
 			style = CAMEL_CASE;
 		}
-		else if (is_arg(INCLUDE, arg))
+		else if (String_eq(arg, INCLUDE))
 		{
 			args_includes = argv + i + 1;
 			num_includes = argc - (i + 1);
@@ -143,30 +65,32 @@ int main(int argc, char* argv[])
 			// `-include' should come at the end. No args can come after.
 			for (int j = i + 1; j < argc; j++)
 			{
-				char* include = argv[j];
+				struct String include = String_wrap(argv[j]);
 
-				if (is_arg(INPUT, include) || is_arg(OUTPUT, include)
-						|| is_arg(INCLUDE, include) || is_binding(include))
+				if (String_eq(include, INPUT) || String_eq(include, OUTPUT)
+						|| String_eq(include, INCLUDE) || is_binding(include))
 				{
 					fprintf(stderr, "-include [paths...] should come at the "
-							"end. Found `%s'.\n", include);
+							"end. Found `%.*s'.\n", include.length,
+							include.str);
 					exit(1);
 				}
 			}
 		}
 		else if (is_binding(arg))
 		{
-			char binds = arg[1];
-			int idx = binds - 'A';
+			char binds = arg.str[1];
+			int binds_i = binds - 'A';
+			struct String binding = String_wrap(argv[++i]);
 
-			if (arg_bindings.buffer[idx].length == 0)
+			if (arg_bindings.buffer[binds_i].length == 0)
 			{
 				num_bindings++;
 			}
 
-			Buffer_26_String_put(&arg_bindings, idx, wrap(argv[++i]));
-			struct_instance += STRUCT_LEN;
-			struct_instance += arg_bindings.buffer[idx].length;
+			Buffer_26_String_put(&arg_bindings, binds_i, binding);
+			struct_instance += STRUCT.length;
+			struct_instance += arg_bindings.buffer[binds_i].length;
 		}
 	}
 
@@ -176,7 +100,7 @@ int main(int argc, char* argv[])
 	{
 		char* include = args_includes[i];
 
-		Buffer_String_push(includes, wrap(include));
+		Buffer_String_push(includes, String_wrap(include));
 	}
 
 	struct Arena binding_arena = Arena_init(struct_instance);
@@ -191,12 +115,12 @@ int main(int argc, char* argv[])
 
 		if (0 < binding.length)
 		{
-			struct Name_Instance binding_parsed = type_instance(&binding_arena,
+			struct Name_Instance type = name_instance(&binding_arena,
 					binding);
 			struct Parametric_Binding _binding = {
 				.parametric = 'A' + i,
-				.type_name = binding_parsed.name,
-				.type_instance = binding_parsed.instance
+				.type_name = type.name,
+				.type_instance = type.instance
 			};
 
 			Buffer_Parametric_Binding_push(bindings, _binding);

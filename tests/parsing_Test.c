@@ -8,7 +8,6 @@
 #include "../primitives/Parametric_Binding.h"
 #include "../primitives/Buffer_Parametric_Binding.h"
 
-#include "../primitives/codegen.h"
 #include "../primitives/parsing.h"
 
 struct Arena zero;

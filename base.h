@@ -33,7 +33,7 @@ struct String
 #define UNUSED(arg) (void)(arg)
 
 #define arraylen(a) (sizeof(a) / sizeof(*(a)))
-#define mstrlen(str) (sizeof(str) - 1)  // -1 to account for zero terminator.
+#define mstrlen(str) (arraylen(str) - 1)  // -1 to account for zero terminator.
 
 #define min(a, b) (((a) < (b)) ? (a) : (b))
 #define max(a, b) (((a) < (b)) ? (b) : (a))
@@ -54,7 +54,7 @@ i32 dkmod(i32 a, i32 n);  // Donald Knuth definition where n dictates sign.
 
 /// Wraps a cstring into a String.
 struct String String_wrap(char const* cstring);
-#define String_mwrap(cstring) (struct String) { mstrlen((cstring)), (cstring) }
+#define String_mwrap(cstring) (struct String){ mstrlen((cstring)), (cstring) }
 
 /// Returns true if :left == :right by colloquial String comparison.
 bool String_eq(struct String const left, struct String const right);

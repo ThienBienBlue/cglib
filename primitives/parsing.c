@@ -7,8 +7,6 @@
 #include "../String.h"
 #include "./Parametric_Binding.h"
 #include "./Buffer_Parametric_Binding.h"
-
-#include "./codegen.h"
 #include "./parsing.h"
 
 
@@ -17,12 +15,12 @@ bool is_whitespace(char c)
 	return ' ' == c || '\n' == c || '\t' == c;
 }
 
-bool is_variable_name(char c)
+static bool is_variable_name(char c)
 {
 	return isalnum(c) || '_' == c;
 }
 
-bool is_instance_char(char c)
+static bool is_instance_char(char c)
 {
 	return !is_variable_name(c) && c != '<' && c != '>';
 }
@@ -65,7 +63,7 @@ struct Binding_At match_type_name(
 	char const* s = str.str;
 	int slen = str.length;
 	int consumed = 0;
-	enum {UNDERSCORE, BRACE} start = BRACE;
+	enum { UNDERSCORE, BRACE } start = BRACE;
 
 	if (s[offset] == '<')
 	{
@@ -146,4 +144,60 @@ struct Binding_At match_type_name(
 	{
 		return (struct Binding_At){ 0 };
 	}
+}
+
+struct Name_Instance name_instance(struct Arena* arena, struct String arg)
+{
+	if (arg.length <= 0)
+	{
+		return (struct Name_Instance){ 0 };
+	}
+	if (!isalpha(arg.str[0]))
+	{
+		return (struct Name_Instance){ arg, arg };
+	}
+
+	u32 ptr_offset = 0;
+
+	while (ptr_offset < arg.length
+			&& arg.str[arg.length - ptr_offset - 1] == '*')
+	{
+		ptr_offset++;
+	}
+
+	struct String name;  // `Buffer<T>' -> `Buffer_String'
+	struct String instance;  // `T inst' -> `struct String inst'
+
+	if (islower(arg.str[0]))
+	{
+		// Primitive case.
+		struct String_Builder _name = String_Builder_init(arena, arg.length);
+
+		_name = String_append(_name, arg);
+		_name.str[0] += 'A' - 'a';
+
+		name = String_Builder_build(_name);
+		instance = arg;
+	}
+	else if (isupper(arg.str[0]))
+	{
+		// struct type case.
+		struct String_Builder _instance = String_Builder_init(arena,
+				STRUCT.length + arg.length);
+
+		_instance = String_append(_instance, STRUCT);
+		_instance = String_append(_instance, arg);
+
+		name = arg;
+		instance = String_Builder_build(_instance);
+	}
+	else
+	{
+		name = arg;
+		instance = arg;
+	}
+
+	name.length -= ptr_offset;
+
+	return (struct Name_Instance) {name, instance};
 }
