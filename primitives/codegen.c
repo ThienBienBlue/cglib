@@ -10,7 +10,7 @@
 #include "codegen.h"
 
 
-struct String codegen(struct Codegen_Args const args,
+function struct String codegen(struct Codegen_Args const args,
 		struct String const template_string)
 {
 	int init_amount = max(1024, 2 * template_string.length);

@@ -26,6 +26,13 @@ struct String
 	char const* str;
 };
 
+#define local_persist static
+#define internal static
+#define global static  // TBD: Name this something else?
+
+// For Fuzzy finding.
+#define function
+
 //-----------
 // Functions.
 //-----------
@@ -40,7 +47,7 @@ struct String
 
 /// HERE BE DRAGONS - this might be UB.
 /// :returns true if :struct_ consists of all zero bytes.
-bool zero_bytes(void* bytes, u32 size);
+function bool zero_bytes(void* bytes, u32 size);
 #define iszero(struct_) zero_bytes(&(struct_), sizeof(struct_))
 
 #ifndef __cplusplus
@@ -49,13 +56,13 @@ bool zero_bytes(void* bytes, u32 size);
 	#define nullptr NULL
 #endif
 
-u32 mmod(i32 a, u32 n);  // Standard mathematical Least Positive Residue.
-i32 dkmod(i32 a, i32 n);  // Donald Knuth definition where n dictates sign.
+function u32 mmod(i32 a, u32 n);  // Standard mathematical Least Positive Residue.
+function i32 dkmod(i32 a, i32 n);  // Donald Knuth definition where n dictates sign.
 
 /// Wraps a cstring into a String.
-struct String String_wrap(char const* cstring);
+function struct String String_wrap(char const* cstring);
 #define String_mwrap(cstring) (struct String){ mstrlen((cstring)), (cstring) }
 
 /// Returns true if :left == :right by colloquial String comparison.
-bool String_eq(struct String const left, struct String const right);
-bool String_ceq(struct String const left, char const* right);
+function bool String_eq(struct String const left, struct String const right);
+function bool String_ceq(struct String const left, char const* right);

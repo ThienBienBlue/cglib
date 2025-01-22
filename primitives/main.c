@@ -21,7 +21,7 @@ struct String const OUTPUT  = String_mwrap("-o");
 struct String const CAMEL_CASE_ARG = String_mwrap("--camel-case");
 struct String const SNAKE_CASE_ARG = String_mwrap("--snake-case");
 
-static bool is_binding(struct String const arg)
+internal bool is_binding(struct String const arg)
 {
 	return arg.length == 2 && arg.str[0] == '-' && isupper(arg.str[1]);
 }
@@ -30,7 +30,7 @@ int main(int argc, char* argv[])
 {
 	struct Buffer_26_String arg_bindings = Buffer_26_String_init((struct String){ 0 });
 	int num_bindings = 0;
-	int struct_instance = 0;  // Malloc enough space for instance names.
+	int struct_bytes = 0;  // Malloc enough space for instance names.
 	char* input = NULL;
 	char* output = NULL;
 	char** args_includes = NULL;
@@ -89,8 +89,8 @@ int main(int argc, char* argv[])
 			}
 
 			Buffer_26_String_put(&arg_bindings, binds_i, binding);
-			struct_instance += STRUCT.length;
-			struct_instance += arg_bindings.buffer[binds_i].length;
+			struct_bytes += STRUCT.length;
+			struct_bytes += arg_bindings.buffer[binds_i].length;
 		}
 	}
 
@@ -103,7 +103,7 @@ int main(int argc, char* argv[])
 		Buffer_String_push(includes, String_wrap(include));
 	}
 
-	struct Arena binding_arena = Arena_init(struct_instance);
+	struct Arena binding_arena = Arena_init(struct_bytes);
 	struct Buffer_Parametric_Binding* bindings =
 			Buffer_Parametric_Binding_init(num_bindings);
 

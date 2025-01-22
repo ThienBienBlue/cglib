@@ -10,22 +10,22 @@
 #include "parsing.h"
 
 
-bool is_whitespace(char c)
+function bool is_whitespace(char c)
 {
 	return ' ' == c || '\n' == c || '\t' == c;
 }
 
-static bool is_variable_name(char c)
+internal function bool is_variable_name(char c)
 {
 	return isalnum(c) || '_' == c;
 }
 
-static bool is_instance_char(char c)
+internal function bool is_instance_char(char c)
 {
 	return !is_variable_name(c) && c != '<' && c != '>';
 }
 
-struct Binding_At match_instance_name(
+function struct Binding_At match_instance_name(
 		struct Buffer_Parametric_Binding const* bindings,
 		struct String const str, unsigned int offset)
 {
@@ -56,7 +56,7 @@ struct Binding_At match_instance_name(
 	}
 }
 
-struct Binding_At match_type_name(
+function struct Binding_At match_type_name(
 		struct Buffer_Parametric_Binding const* bindings, enum Code_Style style,
 		struct Arena* arena, struct String const str, int offset)
 {
@@ -146,7 +146,8 @@ struct Binding_At match_type_name(
 	}
 }
 
-struct Name_Instance name_instance(struct Arena* arena, struct String arg)
+function struct Name_Instance name_instance(struct Arena* arena,
+		struct String arg)
 {
 	if (arg.length <= 0)
 	{

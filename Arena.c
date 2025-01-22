@@ -5,7 +5,7 @@
 #include "Arena.h"
 
 
-struct Arena Arena_init(u32 capacity)
+function struct Arena Arena_init(u32 capacity)
 {
 	u32 leading_terminator = capacity + 1;
 	void* bytes = malloc(leading_terminator);
@@ -20,12 +20,13 @@ struct Arena Arena_init(u32 capacity)
 	}
 }
 
-struct Arena Arena_free_all(struct Arena const self)
+function struct Arena Arena_free_all(struct Arena const self)
 {
 	return (struct Arena){ self.capacity, 1, self.bytes };
 }
 
-struct Arena_Alloc Arena_malloc(struct Arena* self, u32 alignment, i32 size)
+function struct Arena_Alloc Arena_malloc(struct Arena* self, u32 alignment,
+		i32 size)
 {
 	// Ensure proper pointer alignment.
 	uintptr_t offset = (uintptr_t)(self->bytes + self->offset);
@@ -55,12 +56,12 @@ struct Arena_Alloc Arena_malloc(struct Arena* self, u32 alignment, i32 size)
 	}
 }
 
-struct Arena_Alloc Arena_alloc(struct Arena* self, i32 size)
+function struct Arena_Alloc Arena_alloc(struct Arena* self, i32 size)
 {
 	return Arena_malloc(self, DEFAULT_ALIGNMENT, size);
 }
 
-struct Arena_Alloc Arena_pack(struct Arena* self, i32 size)
+function struct Arena_Alloc Arena_pack(struct Arena* self, i32 size)
 {
 	return Arena_malloc(self, 1, size);
 }
