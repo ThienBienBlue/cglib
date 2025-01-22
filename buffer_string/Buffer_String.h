@@ -15,18 +15,18 @@ struct Buffer_String
 	struct String buffer[0];
 };
 
-struct Buffer_String* Buffer_String_init(i32 capacity);
+function struct Buffer_String* Buffer_String_init(i32 capacity);
 
-struct Buffer_String* Buffer_String_from_ptr(i32 capacity, struct String* ptr);
+function struct Buffer_String* Buffer_String_from_ptr(i32 capacity, struct String* ptr);
 
 #define Buffer_String_from_carray(a) Buffer_String_from_ptr(arraylen(a), (a))
 
-struct Buffer_String* Buffer_String_filter(struct Buffer_String* self, bool (*filter)(struct String));
+function struct Buffer_String* Buffer_String_filter(struct Buffer_String* self, bool (*filter)(struct String));
 
-bool Buffer_String_put(struct Buffer_String* self, i32 idx, struct String item);
+function bool Buffer_String_put(struct Buffer_String* self, i32 idx, struct String item);
 
-bool Buffer_String_push(struct Buffer_String* self, struct String item);
+function bool Buffer_String_push(struct Buffer_String* self, struct String item);
 
-bool Buffer_String_pop(struct Buffer_String* self);
+function bool Buffer_String_pop(struct Buffer_String* self);
 
-bool Buffer_String_swap(struct Buffer_String* self, i32 left_idx, i32 right_idx);
+function bool Buffer_String_swap(struct Buffer_String* self, i32 left_idx, i32 right_idx);

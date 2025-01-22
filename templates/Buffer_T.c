@@ -1,11 +1,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "./base.h"
-#include "./Buffer_<T>.h"
+#include "Buffer_<T>.h"
 
 
-struct Buffer<T>* Buffer<T>_init(i32 capacity)
+function struct Buffer<T>* Buffer<T>_init(i32 capacity)
 {
 	capacity = max(0, capacity);
 
@@ -20,7 +19,7 @@ struct Buffer<T>* Buffer<T>_init(i32 capacity)
 	return retval;
 }
 
-struct Buffer<T>* Buffer<T>_from_ptr(i32 capacity, T* ptr)
+function struct Buffer<T>* Buffer<T>_from_ptr(i32 capacity, T* ptr)
 {
 	struct Buffer<T>* retval = Buffer<T>_init(capacity);
 
@@ -33,7 +32,7 @@ struct Buffer<T>* Buffer<T>_from_ptr(i32 capacity, T* ptr)
 	return retval;
 }
 
-struct Buffer<T>* Buffer<T>_filter(struct Buffer<T>* self, bool (*filter)(T))
+function struct Buffer<T>* Buffer<T>_filter(struct Buffer<T>* self, bool (*filter)(T))
 {
 	i32 capacity = self->capacity;
 	T* buffer = self->buffer;
@@ -52,7 +51,7 @@ struct Buffer<T>* Buffer<T>_filter(struct Buffer<T>* self, bool (*filter)(T))
 	return retval;
 }
 
-bool Buffer<T>_put(struct Buffer<T>* self, i32 idx, T item)
+function bool Buffer<T>_put(struct Buffer<T>* self, i32 idx, T item)
 {
 	if (self != null && idx < self->capacity)
 	{
@@ -71,7 +70,7 @@ bool Buffer<T>_put(struct Buffer<T>* self, i32 idx, T item)
 	}
 }
 
-bool Buffer<T>_push(struct Buffer<T>* self, T item)
+function bool Buffer<T>_push(struct Buffer<T>* self, T item)
 {
 	if (self != null)
 	{
@@ -83,7 +82,7 @@ bool Buffer<T>_push(struct Buffer<T>* self, T item)
 	}
 }
 
-bool Buffer<T>_pop(struct Buffer<T>* self)
+function bool Buffer<T>_pop(struct Buffer<T>* self)
 {
 	if (self == null || self->length <= 0)
 	{
@@ -95,7 +94,7 @@ bool Buffer<T>_pop(struct Buffer<T>* self)
 	return true;
 }
 
-bool Buffer<T>_swap(struct Buffer<T>* self, i32 left_idx, i32 right_idx)
+function bool Buffer<T>_swap(struct Buffer<T>* self, i32 left_idx, i32 right_idx)
 {
 	if (self == null)
 	{

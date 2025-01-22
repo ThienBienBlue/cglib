@@ -28,12 +28,12 @@ test_result() {
 awk_last_include='BEGIN{last_include=0} /^#include/{last_include=NR} END{print(last_include)}'
 
 ./codegen -i templates/Buffer_T.h -o tests/out/Buffer_String.h --snake-case -T String
-comp_diff=$(diff $(find . -name 'Buffer_String.h' \! -path '**/tests/out/**') tests/out/Buffer_String.h)
+comp_diff=$(diff buffer_string/Buffer_String.h tests/out/Buffer_String.h)
 test_result Buffer_String.h "$comp_diff"
 
 ./codegen -i templates/Buffer_T.c -o tests/out/Buffer_String.c --snake-case -T String
-buffer_string_git_path=$(find . -name 'Buffer_String.c' \! -path '**/tests/out/**')
+buffer_string_git_path=buffer_string/Buffer_String.c
 last_include_git=$(awk "$awk_last_include" "$buffer_string_git_path")
 last_include_gen=$(awk "$awk_last_include" tests/out/Buffer_String.c)
-comp_diff=$(diff <(tail -n "+$last_include_git" "$buffer_string_git_path") <(tail -n "+$last_include_git" tests/out/Buffer_String.c))
+comp_diff=$(diff <(tail -n "+$last_include_git" "$buffer_string_git_path") <(tail -n "+$last_include_gen" tests/out/Buffer_String.c))
 test_result Buffer_String.c "$comp_diff"

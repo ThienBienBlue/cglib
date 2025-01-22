@@ -2,10 +2,10 @@
 #include <string.h>
 
 #include "../base.h"
-#include "./Buffer_String.h"
+#include "Buffer_String.h"
 
 
-struct Buffer_String* Buffer_String_init(i32 capacity)
+function struct Buffer_String* Buffer_String_init(i32 capacity)
 {
 	capacity = max(0, capacity);
 
@@ -20,7 +20,7 @@ struct Buffer_String* Buffer_String_init(i32 capacity)
 	return retval;
 }
 
-struct Buffer_String* Buffer_String_from_ptr(i32 capacity, struct String* ptr)
+function struct Buffer_String* Buffer_String_from_ptr(i32 capacity, struct String* ptr)
 {
 	struct Buffer_String* retval = Buffer_String_init(capacity);
 
@@ -33,7 +33,7 @@ struct Buffer_String* Buffer_String_from_ptr(i32 capacity, struct String* ptr)
 	return retval;
 }
 
-struct Buffer_String* Buffer_String_filter(struct Buffer_String* self, bool (*filter)(struct String))
+function struct Buffer_String* Buffer_String_filter(struct Buffer_String* self, bool (*filter)(struct String))
 {
 	i32 capacity = self->capacity;
 	struct String* buffer = self->buffer;
@@ -52,7 +52,7 @@ struct Buffer_String* Buffer_String_filter(struct Buffer_String* self, bool (*fi
 	return retval;
 }
 
-bool Buffer_String_put(struct Buffer_String* self, i32 idx, struct String item)
+function bool Buffer_String_put(struct Buffer_String* self, i32 idx, struct String item)
 {
 	if (self != null && idx < self->capacity)
 	{
@@ -71,7 +71,7 @@ bool Buffer_String_put(struct Buffer_String* self, i32 idx, struct String item)
 	}
 }
 
-bool Buffer_String_push(struct Buffer_String* self, struct String item)
+function bool Buffer_String_push(struct Buffer_String* self, struct String item)
 {
 	if (self != null)
 	{
@@ -83,7 +83,7 @@ bool Buffer_String_push(struct Buffer_String* self, struct String item)
 	}
 }
 
-bool Buffer_String_pop(struct Buffer_String* self)
+function bool Buffer_String_pop(struct Buffer_String* self)
 {
 	if (self == null || self->length <= 0)
 	{
@@ -95,7 +95,7 @@ bool Buffer_String_pop(struct Buffer_String* self)
 	return true;
 }
 
-bool Buffer_String_swap(struct Buffer_String* self, i32 left_idx, i32 right_idx)
+function bool Buffer_String_swap(struct Buffer_String* self, i32 left_idx, i32 right_idx)
 {
 	if (self == null)
 	{
