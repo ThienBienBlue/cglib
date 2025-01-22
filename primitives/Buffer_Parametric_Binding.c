@@ -1,24 +1,18 @@
-#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "../base.h"
-#include "../Arena.h"
-#include "../String.h"
 #include "bindings.h"
 #include "Buffer_Parametric_Binding.h"
 
 
-struct Buffer_Parametric_Binding* Buffer_Parametric_Binding_init(int capacity)
+function struct Buffer_Parametric_Binding* Buffer_Parametric_Binding_init(i32 capacity)
 {
-	if (capacity < 0)
-	{
-		capacity = 0;
-	}
+	capacity = max(0, capacity);
 
 	struct Buffer_Parametric_Binding* retval = (struct Buffer_Parametric_Binding*)malloc(sizeof(struct Buffer_Parametric_Binding) + capacity * sizeof(struct Parametric_Binding));
 
-	if (retval != NULL)
+	if (retval != null)
 	{
 		retval->capacity = capacity;
 		retval->length = 0;
@@ -27,13 +21,26 @@ struct Buffer_Parametric_Binding* Buffer_Parametric_Binding_init(int capacity)
 	return retval;
 }
 
-struct Buffer_Parametric_Binding* Buffer_Parametric_Binding_filter(struct Buffer_Parametric_Binding* self, bool (*filter)(struct Parametric_Binding))
+function struct Buffer_Parametric_Binding* Buffer_Parametric_Binding_from_ptr(i32 capacity, struct Parametric_Binding* ptr)
 {
-	int capacity = self->capacity;
+	struct Buffer_Parametric_Binding* retval = Buffer_Parametric_Binding_init(capacity);
+
+	if (retval != null)
+	{
+		memcpy(retval->buffer, ptr, sizeof(struct Parametric_Binding) * capacity);
+		retval->length = capacity;
+	}
+
+	return retval;
+}
+
+function struct Buffer_Parametric_Binding* Buffer_Parametric_Binding_filter(struct Buffer_Parametric_Binding* self, bool (*filter)(struct Parametric_Binding))
+{
+	i32 capacity = self->capacity;
 	struct Parametric_Binding* buffer = self->buffer;
 	struct Buffer_Parametric_Binding* retval = Buffer_Parametric_Binding_init(capacity);
 
-	for (int idx = 0; idx < capacity; idx++)
+	for (i32 idx = 0; idx < capacity; idx++)
 	{
 		struct Parametric_Binding item = buffer[idx];
 
@@ -46,20 +53,18 @@ struct Buffer_Parametric_Binding* Buffer_Parametric_Binding_filter(struct Buffer
 	return retval;
 }
 
-bool Buffer_Parametric_Binding_put(struct Buffer_Parametric_Binding* self, int idx, struct Parametric_Binding item)
+function bool Buffer_Parametric_Binding_put(struct Buffer_Parametric_Binding* self, i32 idx, struct Parametric_Binding item)
 {
-	if (self != NULL && idx < self->capacity)
+	if (self != null && idx < self->capacity)
 	{
-		// Assignment won't compile if struct Parametric_Binding has const fields.
-		struct Parametric_Binding* write = self->buffer + idx;
-		void* written = memmove(write, &item, sizeof(struct Parametric_Binding));
+		self->buffer[idx] = item;
 
-		if (written != NULL && self->length <= idx)
+		if (self->length <= idx)
 		{
 			self->length = idx + 1;
 		}
 
-		return written != NULL;
+		return true;
 	}
 	else
 	{
@@ -67,9 +72,9 @@ bool Buffer_Parametric_Binding_put(struct Buffer_Parametric_Binding* self, int i
 	}
 }
 
-bool Buffer_Parametric_Binding_push(struct Buffer_Parametric_Binding* self, struct Parametric_Binding item)
+function bool Buffer_Parametric_Binding_push(struct Buffer_Parametric_Binding* self, struct Parametric_Binding item)
 {
-	if (self != NULL)
+	if (self != null)
 	{
 		return Buffer_Parametric_Binding_put(self, self->length, item);
 	}
@@ -79,9 +84,9 @@ bool Buffer_Parametric_Binding_push(struct Buffer_Parametric_Binding* self, stru
 	}
 }
 
-bool Buffer_Parametric_Binding_pop(struct Buffer_Parametric_Binding* self)
+function bool Buffer_Parametric_Binding_pop(struct Buffer_Parametric_Binding* self)
 {
-	if (self == NULL || self->length <= 0)
+	if (self == null || self->length <= 0)
 	{
 		return false;
 	}
@@ -91,14 +96,14 @@ bool Buffer_Parametric_Binding_pop(struct Buffer_Parametric_Binding* self)
 	return true;
 }
 
-bool Buffer_Parametric_Binding_swap(struct Buffer_Parametric_Binding* self, int left_idx, int right_idx)
+function bool Buffer_Parametric_Binding_swap(struct Buffer_Parametric_Binding* self, i32 left_idx, i32 right_idx)
 {
-	if (self == NULL)
+	if (self == null)
 	{
 		return false;
 	}
 
-	int len = self->length;
+	i32 len = self->length;
 	struct Parametric_Binding* buffer = self->buffer;
 
 	if (left_idx < 0 || len <= left_idx || right_idx < 0 || len <= right_idx)
@@ -113,20 +118,4 @@ bool Buffer_Parametric_Binding_swap(struct Buffer_Parametric_Binding* self, int 
 	bool right_written = Buffer_Parametric_Binding_put(self, left_idx, right);
 
 	return left_written && right_written;
-}
-
-struct Parametric_Binding const* Buffer_Parametric_Binding_find(
-		struct Buffer_Parametric_Binding const *binding, char parametric)
-{
-	for (int idx = 0; idx < binding->length; idx++)
-	{
-		char matching_parametric = binding->buffer[idx].parametric;
-
-		if (parametric == matching_parametric)
-		{
-			return binding->buffer + idx;
-		}
-	}
-
-	return NULL;
 }

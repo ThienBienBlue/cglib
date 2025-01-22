@@ -7,6 +7,7 @@
 #include "../String.h"
 #include "bindings.h"
 #include "Buffer_Parametric_Binding.h"
+#include "Buffer_Parametric_Binding_extra.h"
 #include "parsing.h"
 
 

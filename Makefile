@@ -13,7 +13,7 @@ ARRAY_T = templates/Array_T.h templates/Array_T.c
 BUFFER_STRING = buffer_string/Buffer_String.h buffer_string/Buffer_String.c
 BUFFER_STRING_ARGPARSE = argparse/Buffer_String_argparse.h argparse/Buffer_String_argparse.c
 CODEGEN = primitives/codegen.h primitives/codegen.c
-BUFFER_PARAMETRIC_BINDING = primitives/Buffer_Parametric_Binding.h primitives/Buffer_Parametric_Binding.c
+BUFFER_PARAMETRIC_BINDING = primitives/Buffer_Parametric_Binding.h primitives/Buffer_Parametric_Binding.c primitives/Buffer_Parametric_Binding_extra.h primitives/Buffer_Parametric_Binding_extra.c
 
 PRIMITIVES = primitives/*
 FILES = $(PRIMITIVES) $(BASE) $(BUFFER_STRING)
@@ -62,6 +62,10 @@ buffer_string: codegen $(BUFFER_T)
 	mv buffer_string/Buffer_String.c buffer_string/Buffer_String_old.c
 	./codegen -i templates/Buffer_T.h -o buffer_string/Buffer_String.h -T String $(CASE)
 	./codegen -i templates/Buffer_T.c -o buffer_string/Buffer_String.c -T String $(CASE)
+
+buffer_parametric_binding: codegen $(BUFFER_T) primitives/bindings.h
+	./codegen -i templates/Buffer_T.h -o primitives/Buffer_Parametric_Binding.h -T Parametric_Binding $(CASE)
+	./codegen -i templates/Buffer_T.c -o primitives/Buffer_Parametric_Binding.c -T Parametric_Binding $(CASE)
 
 array_string: codegen $(ARRAY_T)
 	mv array_string/Array_String.h array_string/Array_String_old.h
