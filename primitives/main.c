@@ -15,13 +15,13 @@
 #include "codegen.h"
 
 
-struct String const INCLUDE = String_mwrap("-include");
-struct String const INPUT   = String_mwrap("-i");
-struct String const OUTPUT  = String_mwrap("-o");
-struct String const CAMEL_CASE_ARG = String_mwrap("--camel-case");
-struct String const SNAKE_CASE_ARG = String_mwrap("--snake-case");
+global struct String const INCLUDE = String_mwrap("-include");
+global struct String const INPUT   = String_mwrap("-i");
+global struct String const OUTPUT  = String_mwrap("-o");
+global struct String const CAMEL_CASE_ARG = String_mwrap("--camel-case");
+global struct String const SNAKE_CASE_ARG = String_mwrap("--snake-case");
 
-internal bool is_binding(struct String const arg)
+internal function bool is_binding(struct String const arg)
 {
 	return arg.length == 2 && arg.str[0] == '-' && isupper(arg.str[1]);
 }

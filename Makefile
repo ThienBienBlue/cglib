@@ -18,6 +18,7 @@ BUFFER_PARAMETRIC_BINDING = primitives/Buffer_Parametric_Binding.h primitives/Bu
 PRIMITIVES = primitives/*
 FILES = $(PRIMITIVES) $(BASE) $(BUFFER_STRING)
 
+
 .PHONY: clean tests buffer_string array_string
 
 default: codegen

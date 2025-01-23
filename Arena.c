@@ -32,23 +32,23 @@ function struct Arena_Alloc Arena_malloc(struct Arena* self, u32 alignment,
 	uintptr_t offset = (uintptr_t)(self->bytes + self->offset);
 	uintptr_t aligned_offset = (offset + alignment - 1) & (~(alignment - 1));
 	// TBD: UB with dropping the upper bits? sizeof(u32) < sizeof(uintptr_t)
-	u32 _aligned_offset = aligned_offset - (uintptr_t)self->bytes;
+	u32 aligned_offset_ = aligned_offset - (uintptr_t)self->bytes;
 
 	if (size < 0)
 	{
-		u32 alloc_capacity = self->capacity - _aligned_offset;
+		u32 alloc_capacity = self->capacity - aligned_offset_;
 
 		self->offset = self->capacity;
-		bzero(self->bytes + _aligned_offset, alloc_capacity);
+		bzero(self->bytes + aligned_offset_, alloc_capacity);
 
-		return (struct Arena_Alloc){ alloc_capacity, _aligned_offset };
+		return (struct Arena_Alloc){ alloc_capacity, aligned_offset_ };
 	}
-	else if (_aligned_offset + size <= self->capacity)
+	else if (aligned_offset_ + size <= self->capacity)
 	{
-		self->offset = _aligned_offset + size;
-		bzero(self->bytes + _aligned_offset, size);
+		self->offset = aligned_offset_ + size;
+		bzero(self->bytes + aligned_offset_, size);
 
-		return (struct Arena_Alloc){ size, _aligned_offset };
+		return (struct Arena_Alloc){ size, aligned_offset_ };
 	}
 	else
 	{

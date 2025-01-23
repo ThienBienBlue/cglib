@@ -5,13 +5,11 @@
 #include "Buffer_String.h"
 
 
-function struct Buffer_String* Buffer_String_init(i32 capacity)
+function struct Buffer_String* Buffer_String_init(u32 capacity)
 {
-	capacity = max(0, capacity);
+	struct Buffer_String* retval = (struct Buffer_String*)malloc(sizeof(struct Buffer_String) + (capacity * sizeof(struct String)));
 
-	struct Buffer_String* retval = (struct Buffer_String*)malloc(sizeof(struct Buffer_String) + capacity * sizeof(struct String));
-
-	if (retval != null)
+	if (retval)
 	{
 		retval->capacity = capacity;
 		retval->length = 0;
@@ -20,11 +18,11 @@ function struct Buffer_String* Buffer_String_init(i32 capacity)
 	return retval;
 }
 
-function struct Buffer_String* Buffer_String_from_ptr(i32 capacity, struct String* ptr)
+function struct Buffer_String* Buffer_String_copy_ptr(u32 capacity, struct String* ptr)
 {
 	struct Buffer_String* retval = Buffer_String_init(capacity);
 
-	if (retval != null)
+	if (retval)
 	{
 		memcpy(retval->buffer, ptr, sizeof(struct String) * capacity);
 		retval->length = capacity;
@@ -33,28 +31,9 @@ function struct Buffer_String* Buffer_String_from_ptr(i32 capacity, struct Strin
 	return retval;
 }
 
-function struct Buffer_String* Buffer_String_filter(struct Buffer_String* self, bool (*filter)(struct String))
+function bool Buffer_String_put(struct Buffer_String* self, u32 idx, struct String item)
 {
-	i32 capacity = self->capacity;
-	struct String* buffer = self->buffer;
-	struct Buffer_String* retval = Buffer_String_init(capacity);
-
-	for (i32 idx = 0; idx < capacity; idx++)
-	{
-		struct String item = buffer[idx];
-
-		if (filter(item))
-		{
-			Buffer_String_push(retval, item);
-		}
-	}
-
-	return retval;
-}
-
-function bool Buffer_String_put(struct Buffer_String* self, i32 idx, struct String item)
-{
-	if (self != null && idx < self->capacity)
+	if (idx < self->capacity)
 	{
 		self->buffer[idx] = item;
 
@@ -73,9 +52,16 @@ function bool Buffer_String_put(struct Buffer_String* self, i32 idx, struct Stri
 
 function bool Buffer_String_push(struct Buffer_String* self, struct String item)
 {
-	if (self != null)
+	return Buffer_String_put(self, self->length, item);
+}
+
+function bool Buffer_String_pop(struct Buffer_String* self)
+{
+	if (0 < self->length)
 	{
-		return Buffer_String_put(self, self->length, item);
+		self->length--;
+
+		return true;
 	}
 	else
 	{
@@ -83,38 +69,22 @@ function bool Buffer_String_push(struct Buffer_String* self, struct String item)
 	}
 }
 
-function bool Buffer_String_pop(struct Buffer_String* self)
+function bool Buffer_String_swap(struct Buffer_String* self, u32 left_idx, u32 right_idx)
 {
-	if (self == null || self->length <= 0)
+	u32 len = self->length;
+
+	if (left_idx < len && right_idx < len)
+	{
+		struct String* buffer = self->buffer;
+
+		struct String temp = buffer[left_idx];
+		buffer[left_idx] = buffer[right_idx];
+		buffer[right_idx] = temp;
+
+		return true;
+	}
+	else
 	{
 		return false;
 	}
-
-	self->length--;
-
-	return true;
-}
-
-function bool Buffer_String_swap(struct Buffer_String* self, i32 left_idx, i32 right_idx)
-{
-	if (self == null)
-	{
-		return false;
-	}
-
-	i32 len = self->length;
-	struct String* buffer = self->buffer;
-
-	if (left_idx < 0 || len <= left_idx || right_idx < 0 || len <= right_idx)
-	{
-		return false;
-	}
-
-	struct String left = buffer[left_idx];
-	struct String right = buffer[right_idx];
-
-	bool left_written = Buffer_String_put(self, right_idx, left);
-	bool right_written = Buffer_String_put(self, left_idx, right);
-
-	return left_written && right_written;
 }

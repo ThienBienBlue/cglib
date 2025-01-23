@@ -10,23 +10,23 @@
 
 struct Buffer_String
 {
-	i32 capacity;
-	i32 length;
+	u32 capacity;
+	u32 length;
 	struct String buffer[0];
 };
 
-function struct Buffer_String* Buffer_String_init(i32 capacity);
+function struct Buffer_String* Buffer_String_init(u32 capacity);
 
-function struct Buffer_String* Buffer_String_from_ptr(i32 capacity, struct String* ptr);
+function struct Buffer_String* Buffer_String_copy_ptr(u32 capacity, struct String* ptr);
 
-#define Buffer_String_from_carray(a) Buffer_String_from_ptr(arraylen(a), (a))
+#define Buffer_String_copy_carray(a) Buffer_String_copy_ptr(arraylen(a), (a))
 
-function struct Buffer_String* Buffer_String_filter(struct Buffer_String* self, bool (*filter)(struct String));
+function struct String Buffer_String_at(struct Buffer_String const* self, i32);
 
-function bool Buffer_String_put(struct Buffer_String* self, i32 idx, struct String item);
+function bool Buffer_String_put(struct Buffer_String* self, u32 idx, struct String item);
 
 function bool Buffer_String_push(struct Buffer_String* self, struct String item);
 
 function bool Buffer_String_pop(struct Buffer_String* self);
 
-function bool Buffer_String_swap(struct Buffer_String* self, i32 left_idx, i32 right_idx);
+function bool Buffer_String_swap(struct Buffer_String* self, u32 left_idx, u32 right_idx);

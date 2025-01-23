@@ -3,7 +3,7 @@
 #include "base.h"
 
 
-u32 mmod(i32 a, u32 n)
+function u32 mmod(i32 a, u32 n)
 {
 	i32 as_signed = (i32)n;
 	i32 near_zero = a % as_signed;
@@ -11,12 +11,12 @@ u32 mmod(i32 a, u32 n)
 	return (0 <= near_zero) ? near_zero : near_zero + as_signed;
 }
 
-bool zero_bytes(void* bytes, u32 size)
+function bool zero_bytes(void* bytes, u32 size)
 {
-	char* _bytes = (char*)bytes;
+	char* bytes_ = (char*)bytes;
 	for (u32 i = 0; i < size; i++)
 	{
-		if (_bytes[i])
+		if (bytes_[i])
 		{
 			return false;
 		}
@@ -25,7 +25,7 @@ bool zero_bytes(void* bytes, u32 size)
 	return true;
 }
 
-struct String String_wrap(char const* cstring)
+function struct String String_wrap(char const* cstring)
 {
 	return (struct String){
 		.length = strlen(cstring),
@@ -33,24 +33,24 @@ struct String String_wrap(char const* cstring)
 	};
 }
 
-bool String_eq(struct String const left, struct String const right)
+function bool String_eq(struct String const left, struct String const right)
 {
 	if (left.length != right.length)
 	{
 		return false;
 	}
 
-	u32 l, r;
+	u32 i;
 	char const* lstr = left.str;
 	char const* rstr = right.str;
 
-	for (l = 0, r = 0; l < left.length && lstr[l] == rstr[r]; l++, r++)
+	for (i = 0; i < left.length && lstr[i] == rstr[i]; i++)
 	{}
 
-	return l == left.length;
+	return i == left.length;
 }
 
-bool String_ceq(struct String const left, char const* right)
+function bool String_ceq(struct String const left, char const* right)
 {
 	return String_eq(left, String_wrap(right));
 }
