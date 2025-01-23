@@ -173,25 +173,25 @@ function struct Name_Instance name_instance(struct Arena* arena,
 	if (islower(arg.str[0]))
 	{
 		// Primitive case.
-		struct String_Builder _name = String_Builder_init(arena, arg.length);
+		struct String_Builder name_ = String_Builder_init(arena, arg.length);
 
-		_name = String_append(_name, arg);
-		_name.str[0] += 'A' - 'a';
+		name_ = String_append(name_, arg);
+		name_.str[0] += 'A' - 'a';
 
-		name = String_Builder_build(_name);
+		name = String_Builder_build(name_);
 		instance = arg;
 	}
 	else if (isupper(arg.str[0]))
 	{
 		// struct type case.
-		struct String_Builder _instance = String_Builder_init(arena,
+		struct String_Builder instance_ = String_Builder_init(arena,
 				STRUCT.length + arg.length);
 
-		_instance = String_append(_instance, STRUCT);
-		_instance = String_append(_instance, arg);
+		instance_ = String_append(instance_, STRUCT);
+		instance_ = String_append(instance_, arg);
 
 		name = arg;
-		instance = String_Builder_build(_instance);
+		instance = String_Builder_build(instance_);
 	}
 	else
 	{

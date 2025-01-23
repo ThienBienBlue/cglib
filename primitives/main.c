@@ -114,12 +114,12 @@ int main(int argc, char* argv[])
 
 		if (0 < binding.length)
 		{
-			struct Parametric_Binding _binding = {
+			struct Parametric_Binding binding_ = {
 				.parametric = 'A' + i,
 				.type = name_instance(&binding_arena, binding)
 			};
 
-			Buffer_Parametric_Binding_push(bindings, _binding);
+			Buffer_Parametric_Binding_push(bindings, binding_);
 		}
 	}
 
