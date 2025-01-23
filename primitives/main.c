@@ -8,7 +8,6 @@
 #include "../Arena.h"
 #include "../String.h"
 #include "../buffer_string/Buffer_String.h"
-#include "Buffer_26_String.h"
 #include "bindings.h"
 #include "Buffer_Parametric_Binding.h"
 #include "parsing.h"
@@ -28,7 +27,7 @@ internal function bool is_binding(struct String const arg)
 
 int main(int argc, char* argv[])
 {
-	struct Buffer_26_String arg_bindings = Buffer_26_String_init((struct String){ 0 });
+	struct String arg_bindings[26] = { 0 };
 	int num_bindings = 0;
 	int struct_bytes = 0;  // Malloc enough space for instance names.
 	char* input = NULL;
@@ -83,14 +82,14 @@ int main(int argc, char* argv[])
 			int binds_i = binds - 'A';
 			struct String binding = String_wrap(argv[++i]);
 
-			if (arg_bindings.buffer[binds_i].length == 0)
+			if (arg_bindings[binds_i].length == 0)
 			{
 				num_bindings++;
 			}
 
-			Buffer_26_String_put(&arg_bindings, binds_i, binding);
+			arg_bindings[binds_i] = binding;
 			struct_bytes += STRUCT.length;
-			struct_bytes += arg_bindings.buffer[binds_i].length;
+			struct_bytes += binding.length;
 		}
 	}
 
@@ -109,9 +108,9 @@ int main(int argc, char* argv[])
 
 	// Resolve `-T String' -> `struct String' and `NAME_String'
 	// Resolve `-T int' -> `int' and `NAME_Int'
-	for (int i = 0; i < 26; i++)
+	for (int i = 0; i < (int)arraylen(arg_bindings); i++)
 	{
-		struct String binding = arg_bindings.buffer[i];
+		struct String binding = arg_bindings[i];
 
 		if (0 < binding.length)
 		{
